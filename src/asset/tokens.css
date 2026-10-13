@@ -1,0 +1,48 @@
+/* Design tokens for the built-in pages (newtab.html, downloads.html).
+   Mirrors Themes/Colors.xaml, Shape.xaml and Motion.xaml: change a value in both places or in neither.
+   Link it first: <link rel="stylesheet" href="tokens.css"> */
+:root {
+  --surface: #222222;
+  --surface-raised: #2E2E2E;
+  --surface-field: #181818;
+  --panel: rgba(255, 255, 255, 0.05);
+  --panel-hover: rgba(255, 255, 255, 0.09);
+  --border: rgba(255, 255, 255, 0.10);
+  --separator: rgba(255, 255, 255, 0.12);
+  --hover: rgba(255, 255, 255, 0.08);
+  --press: rgba(255, 255, 255, 0.14);
+
+  --text: #FAFAFA;
+  --text-soft: #D1D1D1;
+  --text-muted: #929292;
+  --text-tertiary: #6B6B6B;
+  --text-on-accent: #222222;
+
+  --accent: #FAFAFA;
+  --accent-2: #D1D1D1;
+  --accent-gradient: linear-gradient(135deg, #FAFAFA, #D1D1D1);
+  --accent-hover: #FFFFFF;
+  --accent-2-hover: #E6E6E6;
+  --accent-soft: rgba(250, 250, 250, 0.10);
+  --accent-glow: rgba(250, 250, 250, 0.20);
+  --danger: #FF6961;
+  --warning: #FFB340;
+  --success: #32D74B;
+  --blue: #5B8CFF;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --radius-pill: 999px;
+
+  --shadow-popup: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --font: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 100ms;
+  --t-base: 160ms;
+  --t-slow: 260ms;
+}
+
+

@@ -1,0 +1,108 @@
+<Window x:Class="CustomBrowser.Views.StreamPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Download media from this page" Width="608" Height="700"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/CustomBrowser;component/Themes/DialogTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- The 24px margin leaves room for the soft shadow around the card -->
+    <Border Margin="24" Background="{StaticResource MintSurfaceBrush}" BorderBrush="{StaticResource MintSeparatorBrush}" BorderThickness="1" CornerRadius="{StaticResource MintRadiusL}"
+            MouseLeftButtonDown="Card_MouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="24,22,24,0">
+                <TextBlock Text="Download media from this page" Foreground="{StaticResource MintTextBrush}" FontSize="17" FontWeight="SemiBold"/>
+                <TextBlock x:Name="TxtPage" Foreground="{StaticResource MintTextMutedBrush}" FontSize="12" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- Body: either the status (reading / error) or the options -->
+            <Grid Grid.Row="1" Margin="24,0,24,0">
+                <StackPanel x:Name="StatusPanel" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtStatus" Foreground="{StaticResource MintTextSoftBrush}" FontSize="14" TextWrapping="Wrap" TextAlignment="Center"/>
+                    <ProgressBar x:Name="BarBusy" IsIndeterminate="True" Height="4" Foreground="{StaticResource MintAccentBrush}"
+                                 Background="{StaticResource MintSurfaceRaisedBrush}" BorderThickness="0" Margin="40,14,40,0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
+                        <Button x:Name="BtnRetry" Content="Try again" Style="{StaticResource MintButton}"
+                                Click="BtnRetry_Click" Visibility="Collapsed" Margin="0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <ScrollViewer x:Name="OptionsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,14,10,8">
+                        <StackPanel x:Name="PanelSources" Visibility="Collapsed">
+                            <TextBlock Text="Media found on this page" Style="{StaticResource FieldLabel}" Margin="0,0,0,6"/>
+                            <ListBox x:Name="LstSources" Style="{StaticResource DarkListBox}"
+                                     ItemContainerStyle="{StaticResource RowItem}" MaxHeight="104"
+                                     SelectionChanged="LstSources_SelectionChanged"/>
+                        </StackPanel>
+
+                        <TextBlock x:Name="LblVideo" Text="Video quality" Style="{StaticResource FieldLabel}"/>
+                        <ListBox x:Name="LstVideo" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource RowItem}" MaxHeight="156"
+                                 SelectionChanged="LstVideo_SelectionChanged"/>
+
+                        <StackPanel x:Name="PanelAudio">
+                            <TextBlock Text="Audio" Style="{StaticResource FieldLabel}"/>
+                            <ListBox x:Name="LstAudio" Style="{StaticResource DarkListBox}"
+                                     ItemContainerStyle="{StaticResource RowItem}" MaxHeight="124"
+                                     SelectionChanged="LstAudio_SelectionChanged"/>
+                        </StackPanel>
+
+                        <TextBlock x:Name="TxtSummary" Foreground="{StaticResource MintTextMutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                        <TextBlock x:Name="TxtNote" Foreground="{StaticResource MintWarningBrush}" FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,8,0,0" Visibility="Collapsed"/>
+
+                        <TextBlock Text="File name" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="TxtName" Style="{StaticResource MintTextBox}"/>
+
+                        <TextBlock Text="Save to" Style="{StaticResource FieldLabel}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtFolder" Style="{StaticResource MintTextBox}"/>
+                            <Button x:Name="BtnBrowse" Grid.Column="1" Content="Browse..." Style="{StaticResource MintButton}"
+                                    Margin="8,0,0,0" Click="BtnBrowse_Click"/>
+                        </Grid>
+
+                        <CheckBox x:Name="ChkConvert" Margin="0,16,0,0" Style="{StaticResource DarkCheckBox}" IsChecked="True"
+                                  Checked="ChkConvert_Changed" Unchecked="ChkConvert_Changed">
+                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MintTextSoftBrush}" FontSize="12.5"
+                                       Text="Convert to MP4 / M4A when possible (needs FFmpeg)"/>
+                        </CheckBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Footer -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="24,12,24,20">
+                <Button x:Name="BtnCancel" Content="Cancel" Style="{StaticResource MintButton}" IsCancel="True"
+                        Margin="0,0,8,0" Click="BtnCancel_Click"/>
+                <Button x:Name="BtnDownload" Content="Download" Style="{StaticResource MintPrimaryButton}" IsDefault="True"
+                        IsEnabled="False" Click="BtnDownload_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+
+

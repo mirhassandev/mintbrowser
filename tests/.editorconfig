@@ -1,0 +1,4 @@
+[*.cs]
+# Underscores in test method names are the readable xUnit convention
+dotnet_diagnostic.CA1707.severity = none
+

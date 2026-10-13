@@ -1,0 +1,26 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Design tokens: shape, spacing and type. Every radius, gap and font size in the app comes from this short list. -->
+
+    <!-- Radii: small (chips, rows), medium (buttons, fields), large (cards, popups), pill (address bar) -->
+    <CornerRadius x:Key="MintRadiusS">6</CornerRadius>
+    <CornerRadius x:Key="MintRadiusM">10</CornerRadius>
+    <CornerRadius x:Key="MintRadiusL">14</CornerRadius>
+    <CornerRadius x:Key="MintRadiusPill">16</CornerRadius>
+
+    <!-- Spacing scale (4-pt grid) -->
+    <Thickness x:Key="MintPadRow">10,6</Thickness>
+    <Thickness x:Key="MintPadCard">16</Thickness>
+    <Thickness x:Key="MintPadPopup">6</Thickness>
+
+    <!-- Type scale -->
+    <FontFamily x:Key="MintFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="MintFontDisplay">Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="MintFontIcons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <sys:Double x:Key="MintFontCaption">11</sys:Double>
+    <sys:Double x:Key="MintFontBody">13</sys:Double>
+    <sys:Double x:Key="MintFontTitle">15</sys:Double>
+    <sys:Double x:Key="MintFontHeadline">20</sys:Double>
+</ResourceDictionary>
+

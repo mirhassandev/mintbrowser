@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Tab</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <script>
+    // Frame-busting (same idea as downloads.html): this page edits shortcuts, so a hostile page must not embed it.
+    if (window.top !== window.self) {
+      try { window.stop(); } catch (e) { /* ignore */ }
+      document.documentElement.textContent = '';
+      throw new Error('newtab.html cannot be framed');
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root, html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent !important;
+      background-color: transparent !important;
+      font-family: var(--font, 'Segoe UI Variable Text', 'Segoe UI', sans-serif);
+      color: var(--text, #FAFAFA);
+      overflow: hidden;
+    }
+
+    .container, .main-wrapper, #app {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .logo-container {
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .logo-text {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-box-wrapper {
+      width: 100%;
+      max-width: 650px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 16px;
+      color: var(--text, #ffffff);
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      border-radius: var(--radius-pill, 28px);
+      outline: none;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: all 0.2s var(--ease, ease-in-out);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-soft, rgba(255, 255, 255, 0.7));
+    }
+
+    .shortcuts {
+      display: flex;
+      gap: 16px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 800px;
+    }
+
+    .shortcut-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 88px;
+      height: 92px;
+      background: rgba(30, 30, 40, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #FFFFFF;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.2s ease;
+      padding: 8px 4px;
+    }
+
+    .shortcut-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .shortcut-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .shortcut-icon-img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    .shortcut-title {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      max-width: 78px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .shortcuts { min-height: 92px; } /* no layout jump while the list loads */
+
+    /* ---- Shortcut tile wrapper + hover "more" button (Chrome style) ---- */
+    .shortcut-wrap { position: relative; }
+
+    .shortcut-menu-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 22px;
+      height: 22px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.38);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s ease, background 0.15s ease;
+      z-index: 2;
+    }
+    .shortcut-wrap:hover .shortcut-menu-btn,
+    .shortcut-menu-btn:focus-visible,
+    .shortcut-menu-btn.open { opacity: 1; }
+    .shortcut-menu-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .shortcut-letter { font-size: 20px; font-weight: 600; color: #ffffff; }
+
+    /* ---- "Add shortcut" tile ---- */
+    .add-card {
+      font: inherit;
+      cursor: pointer;
+      border-style: dashed;
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(30, 30, 40, 0.28);
+    }
+    .add-card .shortcut-icon-box { border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
+    .add-card .shortcut-title { color: rgba(255, 255, 255, 0.75); }
+
+    /* ---- Tile context menu ---- */
+    .ctx-menu {
+      position: fixed;
+      display: none;
+      min-width: 176px;
+      padding: 5px;
+      background: rgba(44, 44, 46, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 50;
+    }
+    .ctx-menu.open { display: block; animation: fadeIn 0.12s ease-out; }
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #ffffff;
+      font: inherit;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .ctx-item:hover, .ctx-item:focus-visible { background: rgba(255, 255, 255, 0.14); outline: none; }
+    .ctx-item.danger:hover, .ctx-item.danger:focus-visible { background: rgba(255, 105, 97, 0.30); }
+
+    /* ---- Add / Edit shortcut dialog ---- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 60;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: 380px;
+      max-width: calc(100vw - 40px);
+      padding: 22px;
+      background: rgba(44, 44, 46, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.18s ease-out;
+    }
+    .modal h2 { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 14px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .field input:focus { border-color: #FAFAFA; box-shadow: 0 0 0 3px rgba(250, 250, 250, 0.14); }
+    .field-error { min-height: 16px; margin: -4px 0 8px; font-size: 12px; color: #ff8a8a; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    .btn {
+      padding: 8px 20px;
+      font: inherit;
+      font-size: 13px;
+      color: #ffffff;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.12); }
+    .btn.primary { background: linear-gradient(135deg, #FAFAFA, #D1D1D1); border-color: transparent; color: #222222; font-weight: 600; }
+    .btn.primary:hover { background: linear-gradient(135deg, #FFFFFF, #E6E6E6); border-color: transparent; }
+    .btn:disabled { opacity: 0.55; cursor: default; }
+
+    /* Professional Loading Overlay */
+    .loading-overlay {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .spinner-ring {
+      width: 38px;
+      height: 38px;
+      border: 3.5px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #FAFAFA;
+      border-right-color: #929292;
+      border-radius: 50%;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 0.3px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .search-input:focus {
+      background: rgba(0, 0, 0, 0.65);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+    .shortcut-wrap.rise { animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 35ms); }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    /* Soft entrance for the logo + search box (shortcut tiles already "rise" in): the page eases in instead of popping in. */
+    .logo-container, .search-box-wrapper { animation: ntpIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .search-box-wrapper { animation-delay: 30ms; }
+    @keyframes ntpIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <img src="favicon.ico" class="logo-icon" alt="Mint Browser" />
+      <span class="logo-text">Mint Browser</span>
+    </div>
+
+    <div id="contentSection" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <div class="search-box-wrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search with Google or enter address" autofocus />
+      </div>
+
+      <!-- Tiles are rendered from the user's saved shortcuts (see script below) -->
+      <div class="shortcuts" id="shortcutsContainer"></div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="spinner-ring"></div>
+      <span class="loading-text">Connecting...</span>
+    </div>
+  </div>
+
+  <!-- Tile context menu -->
+  <div class="ctx-menu" id="ctxMenu" role="menu">
+    <button class="ctx-item" id="ctxEdit" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      Edit shortcut
+    </button>
+    <button class="ctx-item danger" id="ctxRemove" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      Remove
+    </button>
+  </div>
+
+  <!-- Add / Edit shortcut dialog.
+       NOTE: field ids/placeholders deliberately avoid the words search / query / address / url,
+       because the browser's injected new-tab script treats any input with those hints as the search box. -->
+  <div class="modal-backdrop" id="shortcutModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Add shortcut</h2>
+      <div class="field">
+        <label for="scTitle">Name</label>
+        <input type="text" id="scTitle" placeholder="Name" maxlength="40" autocomplete="off" aria-label="Shortcut name" />
+      </div>
+      <div class="field">
+        <label for="scLink">Website</label>
+        <input type="text" id="scLink" placeholder="e.g. github.com" autocomplete="off" aria-label="Shortcut website" />
+      </div>
+      <div class="field-error" id="scError"></div>
+      <div class="modal-actions">
+        <button class="btn" id="scCancel" type="button">Cancel</button>
+        <button class="btn primary" id="scDone" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const contentSection = document.getElementById('contentSection');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const shortcutsContainer = document.getElementById('shortcutsContainer');
+
+    function showLoading() {
+      contentSection.style.display = 'none';
+      loadingOverlay.style.display = 'flex';
+    }
+
+    function redirectToAddressBar(initialText) {
+      if (window.chrome && window.chrome.webview) {
+        window.chrome.webview.postMessage(JSON.stringify({
+          type: 'focus-address-bar',
+          text: initialText ?? ''
+        }));
+      }
+    }
+
+    input.addEventListener('focus', () => redirectToAddressBar(input.value));
+    input.addEventListener('mousedown', () => redirectToAddressBar(input.value));
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key && e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        redirectToAddressBar(e.key);
+      } else if (e.key === 'Enter') {
+        const value = input.value.trim();
+        if (value) {
+          showLoading();
+          if (value.startsWith('http://') || value.startsWith('https://')) {
+            window.location.href = value;
+          } else if (value.includes('.') && !value.includes(' ')) {
+            window.location.href = 'https://' + value;
+          } else {
+            window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(value);
+          }
+        }
+      } else {
+        redirectToAddressBar('');
+      }
+    });
+
+    input.addEventListener('input', () => {
+      redirectToAddressBar(input.value);
+      input.value = '';
+    });
+
+    // ------------------------------------------------------------------
+    // Shortcuts (user-managed, Chrome style). Data lives in the browser app;
+    // this page just renders it and sends add / update / remove requests.
+    // ------------------------------------------------------------------
+    const host = window.chrome && window.chrome.webview;
+    const ctxMenu = document.getElementById('ctxMenu');
+    const modal = document.getElementById('shortcutModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const scTitle = document.getElementById('scTitle');
+    const scLink = document.getElementById('scLink');
+    const scError = document.getElementById('scError');
+    const scDone = document.getElementById('scDone');
+
+    let shortcuts = [];
+    let maxShortcuts = 10;
+    let menuSite = null;
+    let menuBtn = null;
+    let editingId = null;
+    let awaitingReply = false;
+    let pendingError = null;
+
+    const send = (obj) => { if (host) host.postMessage(JSON.stringify(obj)); };
+
+    function domainOf(url) {
+      try {
+        return new URL(/^https?:\/\//i.test(url) ? url : 'https://' + url).hostname.replace(/^www\./i, '');
+      } catch (e) {
+        return (url || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+      }
+    }
+
+    function el(tag, className) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      return node;
+    }
+
+    function buildIconBox(site, name) {
+      const box = el('div', 'shortcut-icon-box');
+      const showLetter = () => {
+        const letter = el('span', 'shortcut-letter');
+        letter.textContent = (name.trim()[0] || '?').toUpperCase();
+        box.appendChild(letter);
+      };
+      // The browser sends the icon it has stored on this computer (a data: address). No icon yet = a letter. Nothing is requested from a third party.
+      const src = site.iconUrl || site.faviconUrl || '';
+      if (!/^(data:image\/|https:\/\/)/i.test(src)) { showLetter(); return box; }
+      const img = el('img', 'shortcut-icon-img');
+      img.alt = '';
+      img.onerror = () => { img.remove(); showLetter(); };
+      img.src = src;
+      box.appendChild(img);
+      return box;
+    }
+
+    function createTile(site) {
+      const name = site.title || domainOf(site.url);
+
+      const wrap = el('div', 'shortcut-wrap');
+
+      const card = el('a', 'shortcut-card');
+      card.href = site.url;
+      card.title = name;
+      card.addEventListener('click', (e) => {
+        if (e.button === 0 && !e.ctrlKey && !e.shiftKey && !e.metaKey) showLoading();
+      });
+      card.appendChild(buildIconBox(site, name));
+      const label = el('span', 'shortcut-title');
+      label.textContent = name;
+      card.appendChild(label);
+
+      const more = el('button', 'shortcut-menu-btn');
+      more.type = 'button';
+      more.title = 'More actions';
+      more.setAttribute('aria-label', 'More actions for ' + name);
+      more.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>';
+      more.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (menuSite === site && ctxMenu.classList.contains('open')) closeMenu();
+        else openMenu(site, more);
+      });
+
+      wrap.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        openMenu(site, null, e.clientX, e.clientY);
+      });
+
+      wrap.appendChild(card);
+      wrap.appendChild(more);
+      return wrap;
+    }
+
+    function createAddTile() {
+      const btn = el('button', 'shortcut-card add-card');
+      btn.type = 'button';
+      btn.title = 'Add shortcut';
+      const box = el('div', 'shortcut-icon-box');
+      box.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+      const label = el('span', 'shortcut-title');
+      label.textContent = 'Add shortcut';
+      btn.appendChild(box);
+      btn.appendChild(label);
+      btn.addEventListener('click', () => openDialog(null));
+      return btn;
+    }
+
+    function renderShortcuts() {
+      shortcutsContainer.innerHTML = '';
+      shortcuts.forEach((site, i) => {
+        const tile = createTile(site);
+        if (!window.__tilesAnimated) { tile.style.setProperty('--i', i); tile.classList.add('rise'); }
+        shortcutsContainer.appendChild(tile);
+      });
+      window.__tilesAnimated = true;
+      if (shortcuts.length < maxShortcuts) shortcutsContainer.appendChild(createAddTile());
+    }
+
+    // ---- context menu ----
+    function openMenu(site, anchor, x, y) {
+      closeMenu();
+      menuSite = site;
+      menuBtn = anchor;
+      if (anchor) anchor.classList.add('open');
+
+      ctxMenu.classList.add('open');
+      const w = ctxMenu.offsetWidth, h = ctxMenu.offsetHeight;
+      if (anchor) {
+        const r = anchor.getBoundingClientRect();
+        x = r.right - w;
+        y = r.bottom + 6;
+      }
+      ctxMenu.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 8)) + 'px';
+      ctxMenu.style.top = Math.max(8, Math.min(y, window.innerHeight - h - 8)) + 'px';
+    }
+
+    function closeMenu() {
+      ctxMenu.classList.remove('open');
+      if (menuBtn) menuBtn.classList.remove('open');
+      menuSite = null;
+      menuBtn = null;
+    }
+
+    document.getElementById('ctxEdit').addEventListener('click', () => {
+      const site = menuSite;
+      closeMenu();
+      if (site) openDialog(site);
+    });
+    document.getElementById('ctxRemove').addEventListener('click', () => {
+      const site = menuSite;
+      closeMenu();
+      if (site) send({ type: 'remove-shortcut', id: site.id });
+    });
+    document.addEventListener('click', (e) => { if (!ctxMenu.contains(e.target)) closeMenu(); });
+    window.addEventListener('resize', closeMenu);
+    window.addEventListener('blur', closeMenu);
+
+    // ---- add / edit dialog ----
+    function setBusy(busy) { scDone.disabled = busy; }
+
+    function showDialogError(text) { scError.textContent = text || ''; }
+
+    function openDialog(site) {
+      editingId = site ? site.id : null;
+      modalTitle.textContent = site ? 'Edit shortcut' : 'Add shortcut';
+      scTitle.value = site ? (site.title || '') : '';
+      scLink.value = site ? site.url : '';
+      showDialogError('');
+      setBusy(false);
+      awaitingReply = false;
+      pendingError = null;
+      modal.classList.add('open');
+      setTimeout(() => { (site ? scTitle : scLink).focus(); (site ? scTitle : scLink).select(); }, 30);
+    }
+
+    function closeDialog() {
+      modal.classList.remove('open');
+      awaitingReply = false;
+      pendingError = null;
+      setBusy(false);
+    }
+
+    function submitDialog() {
+      const link = scLink.value.trim();
+      if (!link) { showDialogError('Enter a web address.'); scLink.focus(); return; }
+      if (!host) { showDialogError('Shortcuts can only be saved inside Mint Browser.'); return; }
+
+      showDialogError('');
+      setBusy(true);
+      awaitingReply = true;
+      pendingError = null;
+      send({
+        type: editingId ? 'update-shortcut' : 'add-shortcut',
+        id: editingId,
+        title: scTitle.value.trim(),
+        url: link
+      });
+    }
+
+    scDone.addEventListener('click', submitDialog);
+    document.getElementById('scCancel').addEventListener('click', closeDialog);
+    modal.addEventListener('mousedown', (e) => { if (e.target === modal) closeDialog(); });
+    [scTitle, scLink].forEach(field => field.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); submitDialog(); }
+    }));
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (modal.classList.contains('open')) closeDialog();
+      else closeMenu();
+    });
+
+    // ---- messages from the browser ----
+    if (host) {
+      host.addEventListener('message', (event) => {
+        try {
+          const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+
+          if (msg.type === 'shortcut-error') {
+            pendingError = msg.message || 'Could not save the shortcut.';
+          } else if (msg.type === 'top-sites-data' && Array.isArray(msg.data)) {
+            shortcuts = msg.data;
+            if (Number.isInteger(msg.maxShortcuts)) maxShortcuts = msg.maxShortcuts;
+            renderShortcuts();
+
+            if (awaitingReply) {
+              awaitingReply = false;
+              setBusy(false);
+              if (pendingError) { showDialogError(pendingError); pendingError = null; }
+              else closeDialog();
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      send({ type: 'get-top-sites' });
+    }
+  </script>
+</body>
+</html>
+
+

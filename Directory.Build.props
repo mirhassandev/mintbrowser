@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!-- All build output (bin and obj) goes to <repo>/artifacts, never into src/. Safe to delete at any time. -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+  
+    <!-- Code quality: reported as warnings for now; promoted to errors once the baseline is clean. -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- CS1591 (missing XML docs) is hidden until the documentation pass (Phase 1, step 1.7). -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+</Project>
+

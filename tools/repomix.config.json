@@ -1,0 +1,38 @@
+{
+  "output": {
+    "filePath": "repomix-output.txt",
+    "style": "xml",
+    "removeComments": false,
+    "removeEmptyLines": true,
+    "showLineNumbers": false,
+    "topFilesLength": 10
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "repomix-output.*",
+      "_code_review*.*",
+      "_codebase_dump*.*",
+      "artifacts/**",
+      "bin/**",
+      "obj/**",
+      "_backups/**",
+      "**/*.WebView2/**",
+      "**/EBWebView/**",
+      "**/Cache/**",
+      "**/Code Cache/**",
+      "third_party/**",
+      "*.dll",
+      "*.exe",
+      "*.pdb",
+      "*.pma",
+      "*.log",
+      "*.ico",
+      "*.wasm",
+      "*.wat",
+      "*.db",
+      "*.sqlite"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Design tokens: motion. Short, decelerating, never bouncy. Helpers/Motion.cs reads these three durations and MintEaseOut. -->
+    <Duration x:Key="MintMotionFast">0:0:0.10</Duration>
+    <Duration x:Key="MintMotionBase">0:0:0.16</Duration>
+    <Duration x:Key="MintMotionSlow">0:0:0.26</Duration>
+
+    <!-- Close to the cubic-bezier(0.2, 0.8, 0.2, 1) curve used on the web pages -->
+    <QuinticEase x:Key="MintEaseOut" EasingMode="EaseOut"/>
+    <CubicEase x:Key="MintEaseInOut" EasingMode="EaseInOut"/>
+</ResourceDictionary>
+

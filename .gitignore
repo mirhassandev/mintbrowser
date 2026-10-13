@@ -1,0 +1,55 @@
+# ─── Build output ─────────────────────────────────────────────────────────────
+artifacts/
+bin/
+obj/
+
+# ─── IDE & editor files ───────────────────────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Rider / ReSharper ────────────────────────────────────────────────────────
+_ReSharper*/
+*.DotSettings.user
+
+# ─── OS noise ─────────────────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ─── WebView2 runtime profile (cookies, logins, cache) ───────────────────────
+*.WebView2/
+EBWebView/
+WebView2Data/
+
+# ─── Local databases written at runtime ───────────────────────────────────────
+*.db
+*.db-log
+*.db-journal
+
+# ─── Tooling output and local scratch files ───────────────────────────────────
+repomix-output.*
+_backups/
+*.bak_*
+_code_review.txt
+_codebase_dump.txt
+_changes.patch
+
+# ─── NuGet packages (restored automatically) ──────────────────────────────────
+*.nupkg
+packages/
+project.lock.json
+project.assets.json
+
+# ─── Log files written by the running app ────────────────────────────────────
+*.log
+

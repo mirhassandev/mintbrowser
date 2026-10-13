@@ -1,0 +1,62 @@
+<Window x:Class="CustomBrowser.Views.ThemedDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mint Browser" Width="488" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI"
+        PreviewKeyDown="Dialog_PreviewKeyDown">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/CustomBrowser;component/Themes/DialogTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- The 24px margin leaves room for the soft shadow around the card -->
+    <Border x:Name="Card" Margin="24" Background="{StaticResource MintSurfaceBrush}" BorderBrush="{StaticResource MintSeparatorBrush}" BorderThickness="1"
+            CornerRadius="{StaticResource MintRadiusL}" MouseLeftButtonDown="Card_MouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="22,22,22,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="IconHost" Grid.Column="0" Width="40" Height="40" CornerRadius="20"
+                        BorderThickness="1" VerticalAlignment="Top" Margin="0,0,16,0">
+                    <TextBlock x:Name="TxtIcon" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="20" FontWeight="Bold"/>
+                </Border>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock x:Name="TxtTitle" Foreground="{StaticResource MintTextBrush}" FontSize="15" FontWeight="SemiBold"
+                               TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  MaxHeight="260">
+                        <TextBox x:Name="TxtMessage" IsReadOnly="True" IsReadOnlyCaretVisible="False"
+                                 TextWrapping="Wrap" Background="Transparent" BorderThickness="0" Padding="0"
+                                 Foreground="{StaticResource MintTextSoftBrush}" FontSize="13" SelectionBrush="#929292"
+                                 FocusVisualStyle="{x:Null}"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel x:Name="ButtonRow" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                        Margin="22,20,22,20"/>
+        </Grid>
+    </Border>
+</Window>
+
+
+

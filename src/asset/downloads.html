@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloads</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Colours (--panel, --border, --text, --accent, --danger etc.) come from tokens.css.
+         They must NOT be re-declared here as var(--same-name): a custom property that refers
+         to itself is invalid and silently drops every colour that uses it. */
+      color-scheme: dark;
+      --bg: var(--surface, #222222);
+      --sidebar-bg: rgba(28, 28, 30, 0.72);
+      --muted: var(--text-muted, #929292);
+      --soft: var(--text-soft, #D1D1D1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif);
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      background:
+        radial-gradient(1000px 500px at 15% -10%, rgba(250, 250, 250, 0.05), transparent 60%),
+        radial-gradient(800px 400px at 95% 0%, rgba(255, 255, 255, 0.03), transparent 60%),
+        var(--bg);
+    }
+
+    /* Dark scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      height: 100%;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px 20px;
+      user-select: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      padding: 0 8px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .brand svg { width: 26px; height: 26px; stroke: var(--accent); stroke-width: 2.2; }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 18px 8px 8px;
+    }
+
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--soft);
+      cursor: pointer;
+      transition: all .16s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+    .nav-item.active { background: rgba(250, 250, 250, 0.10); color: var(--accent); font-weight: 600; }
+    .nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-badge { margin-left: auto; font-size: 11px; padding: 2px 7px; border-radius: 10px; background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; }
+    .nav-item.active .nav-badge { background: var(--accent); color: #000; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .btn-folder {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--soft);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .16s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-folder:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+    .btn-folder svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    /* ---------- Main Content Area ---------- */
+    .main {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      padding: 30px 36px 60px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .header-title { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+
+    .search-box {
+      flex: 1;
+      max-width: 420px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px 10px 38px;
+      font-size: 13.5px;
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .search-box input:focus { border-color: var(--accent); background: rgba(0, 0, 0, 0.6); }
+    .search-box input::placeholder { color: rgba(255, 255, 255, 0.45); }
+    .search-box svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .btn-action {
+      font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+      padding: 8px 14px; border-radius: 18px;
+      color: var(--soft); background: var(--panel); border: 1px solid var(--border);
+      transition: all .16s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-action:hover { background: var(--panel-hover); color: #fff; }
+    .btn-action.danger:hover { color: var(--danger); border-color: rgba(255, 107, 107, 0.4); }
+    .btn-action[disabled] { opacity: .35; cursor: default; pointer-events: none; }
+
+    /* ---------- Add link + queue settings ---------- */
+    .add-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -8px 0 20px; }
+    .add-bar input[type=text] {
+      flex: 1; min-width: 260px; padding: 10px 16px; font: inherit; font-size: 13.5px;
+      color: var(--text); background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border);
+      border-radius: 20px; outline: none;
+    }
+    .add-bar input[type=text]:focus { border-color: var(--accent); }
+    .add-bar .btn-action.primary { background: var(--accent-gradient); color: #222222; border-color: transparent; }
+    .add-bar .opt { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .add-bar .opt input {
+      width: 70px; padding: 6px 8px; font: inherit; font-size: 12.5px; color: var(--text);
+      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 10px; outline: none;
+    }
+    .add-bar .opt input:focus { border-color: var(--accent); }
+
+    /* ---------- Download List ---------- */
+    .group-title {
+      margin: 24px 4px 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      transition: background .15s ease, border-color .15s ease;
+      position: relative;
+    }
+    .card:hover {
+      background: var(--panel-hover);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .card.openable { cursor: pointer; }
+
+    .ico {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      color: #fff;
+      background: #3A3A3A;
+      flex-shrink: 0;
+    }
+    .ico.archive { background: linear-gradient(135deg, #858585, #5E5E5E); }
+    .ico.app     { background: linear-gradient(135deg, #9A9A9A, #6E6E6E); }
+    .ico.doc     { background: linear-gradient(135deg, #767676, #525252); }
+    .ico.video   { background: linear-gradient(135deg, #686868, #464646); }
+    .ico.audio   { background: linear-gradient(135deg, #8E8E8E, #666666); }
+    .ico.image   { background: linear-gradient(135deg, #7C7C7C, #585858); }
+    .ico.other   { background: linear-gradient(135deg, #505050, #3A3A3A); }
+    /* shell-icon variant: transparent bg so only the real icon shows */
+    .ico.shell-img { background: rgba(255,255,255,0.06); }
+    .ico.shell-img img { width: 32px; height: 32px; image-rendering: auto; }
+
+    .ico { flex-direction: column; gap: 3px; }
+    .ico svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .ico span { font-size: 8.5px; font-weight: 800; letter-spacing: .06em; line-height: 1; opacity: .92; }
+
+    .info { min-width: 0; }
+    .name-row { display: flex; align-items: center; gap: 8px; }
+    .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+    .card.gone .name { text-decoration: line-through; color: var(--muted); }
+
+    .src { margin-top: 3px; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .status-line { margin-top: 5px; font-size: 12px; color: var(--soft); display: flex; align-items: center; gap: 6px; }
+    .status-line.failed, .status-line.gone { color: var(--danger); }
+    .status-line.paused { color: var(--warning); }
+    .status-line.done { color: var(--muted); }
+
+    .bar { margin-top: 8px; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+    .bar > i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+    .bar.paused > i { background: linear-gradient(90deg, var(--warning), #FFD166); }
+    .bar.wait > i { width: 35% !important; animation: slide 1.1s ease-in-out infinite alternate; }
+    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(185%); } }
+
+    /* Action Buttons inside Card */
+    .card-actions { display: flex; gap: 5px; align-items: center; position: relative; z-index: 2; }
+    
+    .act-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .act-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(255, 255, 255, 0.15); }
+    .act-btn.accent:hover { color: var(--accent); border-color: rgba(250, 250, 250, 0.30); }
+    .act-btn.warn:hover { color: var(--warning); border-color: rgba(255, 179, 71, 0.35); }
+    .act-btn.danger:hover { color: var(--danger); border-color: rgba(255, 107, 107, 0.35); }
+    .act-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+
+    /* ---------- Empty State ---------- */
+    .empty { display: none; text-align: center; margin: auto; padding: 60px 20px; color: var(--muted); }
+    .empty svg { width: 64px; height: 64px; stroke: rgba(255, 255, 255, 0.2); fill: none; stroke-width: 1.4; margin-bottom: 16px; }
+    .empty h2 { font-size: 18px; font-weight: 600; color: var(--soft); margin-bottom: 6px; }
+    .empty p { font-size: 13px; }
+    .empty.show { display: block; }
+
+    /* ---------- Modals ---------- */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal-box {
+      background: #2E2E2E;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      width: 440px;
+      max-width: 90%;
+      padding: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: transform .2s ease;
+    }
+    .modal-overlay.open .modal-box { transform: scale(1); }
+
+    .modal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 17px; font-weight: 700; color: #fff; }
+    .modal-header svg { width: 22px; height: 22px; }
+    .modal-desc { font-size: 13px; color: var(--soft); line-height: 1.5; margin-bottom: 18px; word-break: break-word; }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .modal-input:focus { border-color: var(--accent); }
+
+    .modal-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #fff;
+      user-select: none;
+    }
+    .modal-checkbox-row input { width: 16px; height: 16px; accent-color: var(--danger); cursor: pointer; }
+
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-modal {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .16s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-modal.secondary { background: rgba(255, 255, 255, 0.08); color: var(--soft); }
+    .btn-modal.secondary:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+    .btn-modal.primary { background: var(--accent); color: #000; }
+    .btn-modal.primary:hover { filter: brightness(1.1); }
+    .btn-modal.danger { background: var(--danger); color: #fff; }
+    .btn-modal.danger:hover { filter: brightness(1.1); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #2E2E2E;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .2s ease;
+      z-index: 2000;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  
+    /* ---------- Refinement pass: quieter, softer, one vibe ---------- */
+    .nav-item.active { background: rgba(255, 255, 255, 0.10); color: #fff; }
+    .nav-item.active svg { stroke: var(--accent); }
+    .nav-item.active .nav-badge { background: rgba(255, 255, 255, 0.18); color: #fff; }
+    .header-title { font-size: 28px; letter-spacing: -0.6px; }
+    .search-box input, .add-bar input[type=text], .add-bar .opt input, .modal-input {
+      background: rgba(255, 255, 255, 0.07); border: 1px solid transparent; border-radius: 10px;
+    }
+    .search-box input:focus, .add-bar input[type=text]:focus, .add-bar .opt input:focus, .modal-input:focus {
+      border-color: var(--accent); background: rgba(255, 255, 255, 0.09); box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .btn-action, .btn-folder { border-color: transparent; background: rgba(255, 255, 255, 0.07); }
+    .btn-action:hover, .btn-folder:hover { background: rgba(255, 255, 255, 0.13); }
+    .card { border-color: transparent; border-radius: 14px; }
+    .card:hover { border-color: transparent; }
+    .card.openable .card-actions { opacity: 0; transition: opacity .16s var(--ease); }
+    .card.openable:hover .card-actions, .card.openable:focus-within .card-actions { opacity: 1; }
+    .act-btn { background: transparent; border-radius: 50%; width: 30px; height: 30px; }
+    .act-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: transparent; }
+    button:focus-visible, .nav-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ---------- Visual polish (overrides above) ---------- */
+    .card {
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 22px rgba(0, 0, 0, 0.20);
+      transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    }
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(250, 250, 250, 0.22);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 12px 28px rgba(0, 0, 0, 0.30);
+    }
+    .ico.shell-img {
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.03));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .ico.shell-img img { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.40)); }
+    .bar { height: 5px; background: rgba(255, 255, 255, 0.07); }
+    .bar > i { box-shadow: 0 0 12px rgba(250, 250, 250, 0.25); }
+    .bar.paused > i { box-shadow: 0 0 12px rgba(255, 179, 71, 0.35); }
+    .group-title { margin-top: 28px; letter-spacing: .1em; }
+    .act-btn { border-radius: 10px; }
+    .nav-item.active { box-shadow: inset 3px 0 0 var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Category Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 20h16"/></svg>
+      Downloads
+    </div>
+
+    <div class="nav-label">Filter</div>
+    <ul class="nav-list">
+      <li class="nav-item active" data-filter="all">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        All Downloads
+        <span id="badgeAll" class="nav-badge">0</span>
+      </li>
+      <li class="nav-item" data-filter="active">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Downloading
+        <span id="badgeActive" class="nav-badge" style="display:none;">0</span>
+      </li>
+      <li class="nav-item" data-filter="completed">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Completed
+      </li>
+    </ul>
+
+    <div class="nav-label">Categories</div>
+    <ul class="nav-list">
+      <li class="nav-item" data-filter="video">
+        <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Videos
+      </li>
+      <li class="nav-item" data-filter="audio">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Audio & Music
+      </li>
+      <li class="nav-item" data-filter="app">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/></svg>
+        Programs & Apps
+      </li>
+      <li class="nav-item" data-filter="archive">
+        <svg viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>
+        Compressed / Zips
+      </li>
+      <li class="nav-item" data-filter="doc">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Documents
+      </li>
+      <li class="nav-item" data-filter="image">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Images
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button id="btnOpenFolder" class="btn-folder" title="Open Downloads directory">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Open Folder
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <main class="main">
+    <div class="header-bar">
+      <h1 id="viewTitle" class="header-title">All Downloads</h1>
+      
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search" type="text" placeholder="Search downloads by name or URL..." autocomplete="off" />
+      </div>
+
+      <div class="header-actions">
+        <button id="btnClearFinished" class="btn-action danger" title="Clear completed and failed downloads">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Clear Finished
+        </button>
+      </div>
+    </div>
+
+    <div class="add-bar">
+      <input id="txtAddUrl" type="text" placeholder="Paste a download link (https://...) and press Enter" autocomplete="off" spellcheck="false" />
+      <button id="btnAddUrl" class="btn-action primary" title="Add this link to the download queue">+ Add</button>
+      <label class="opt">Max at once <input id="txtMaxConcurrent" type="number" min="1" max="16" value="3" /></label>
+      <label class="opt">Speed limit (KB/s, 0 = off) <input id="txtSpeedLimit" type="number" min="0" step="64" value="0" /></label>
+    </div>
+
+    <div id="list"></div>
+
+    <div id="empty" class="empty">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 20h16"/></svg>
+      <h2 id="emptyTitle">No downloads yet</h2>
+      <p id="emptyText">Files you download will appear here.</p>
+    </div>
+  </main>
+
+  <!-- Delete Modal -->
+  <div id="modalDelete" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <svg viewBox="0 0 24 24" stroke="var(--danger)" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Delete Download
+      </div>
+      <div id="modalDeleteDesc" class="modal-desc">Are you sure you want to remove this download?</div>
+      
+      <label class="modal-checkbox-row">
+        <input id="chkDeleteDisk" type="checkbox" />
+        <span>Also delete file from disk permanently</span>
+      </label>
+
+      <div class="modal-buttons">
+        <button id="btnCancelDelete" class="btn-modal secondary">Cancel</button>
+        <button id="btnConfirmDelete" class="btn-modal danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh Link Modal (IDM Feature) -->
+  <div id="modalRefresh" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh Download Address
+      </div>
+      <div class="modal-desc">
+        If this download failed due to an expired session or token, paste the new download address below to resume without starting over.
+      </div>
+      
+      <input id="txtRefreshUrl" class="modal-input" type="text" placeholder="https://..." autocomplete="off" />
+
+      <div class="modal-buttons">
+        <button id="btnCancelRefresh" class="btn-modal secondary">Cancel</button>
+        <button id="btnConfirmRefresh" class="btn-modal primary">Resume Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Finished Modal -->
+  <div id="modalClear" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">Clear finished downloads</div>
+      <div class="modal-desc">Remove completed and failed downloads from the list? The files stay on your disk.</div>
+      <div class="modal-buttons">
+        <button id="btnCancelClear" class="btn-modal secondary">Cancel</button>
+        <button id="btnConfirmClear" class="btn-modal primary">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Link copied to clipboard</div>
+
+  <script>
+    (() => {
+      if (window.top !== window.self) { document.documentElement.textContent = ''; return; }
+
+      const host = window.chrome && window.chrome.webview;
+      const listEl = document.getElementById('list');
+      const emptyEl = document.getElementById('empty');
+      const searchEl = document.getElementById('search');
+      const clearBtn = document.getElementById('btnClearFinished');
+      const viewTitleEl = document.getElementById('viewTitle');
+      const toastEl = document.getElementById('toast');
+
+      // Modals
+      const modalDelete = document.getElementById('modalDelete');
+      const modalDeleteDesc = document.getElementById('modalDeleteDesc');
+      const chkDeleteDisk = document.getElementById('chkDeleteDisk');
+      const btnCancelDelete = document.getElementById('btnCancelDelete');
+      const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+
+      const modalRefresh = document.getElementById('modalRefresh');
+      const txtRefreshUrl = document.getElementById('txtRefreshUrl');
+      const btnCancelRefresh = document.getElementById('btnCancelRefresh');
+      const btnConfirmRefresh = document.getElementById('btnConfirmRefresh');
+
+      let currentFilter = 'all';
+      let items = [];
+      let pendingDeleteId = null;
+      let pendingRefreshId = null;
+      let pollTimer = null;
+      const iconCache = Object.create(null); // icon key → base64 PNG; the C# side sends each distinct icon once
+
+      const send = (obj) => { if (host) host.postMessage(JSON.stringify(obj)); };
+
+      const showToast = (msg) => {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2000);
+      };
+
+      // ---------- Helpers ----------
+      const el = (tag, cls, text) => {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+
+      const svgIcon = (path, w = 16, h = 16) => {
+        const ns = 'http://www.w3.org/2000/svg';
+        const s = document.createElementNS(ns, 'svg');
+        s.setAttribute('viewBox', '0 0 24 24');
+        s.style.width = w + 'px';
+        s.style.height = h + 'px';
+        const p = document.createElementNS(ns, 'path');
+        p.setAttribute('d', path);
+        s.appendChild(p);
+        return s;
+      };
+
+      const fmtBytes = (n) => {
+        if (!n || n <= 0) return '0 B';
+        const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let i = 0, v = n;
+        while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+        return (i === 0 ? n + ' B' : v.toFixed(1) + ' ' + u[i]);
+      };
+
+      const ago = (ms) => {
+        const s = Math.max(0, (Date.now() - ms) / 1000);
+        if (s < 60) return 'Just now';
+        const m = Math.floor(s / 60);
+        if (m < 60) return m === 1 ? '1 min ago' : m + ' mins ago';
+        const h = Math.floor(m / 60);
+        if (h < 24) return h === 1 ? '1 hour ago' : h + ' hours ago';
+        return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      };
+
+      const dayLabel = (ms) => {
+        const d = new Date(ms), t = new Date();
+        const startOf = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+        const diff = Math.round((startOf(t) - startOf(d)) / 86400000);
+        if (diff === 0) return 'Today';
+        if (diff === 1) return 'Yesterday';
+        return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: d.getFullYear() === t.getFullYear() ? undefined : 'numeric' });
+      };
+
+      const kindOf = (name) => {
+        const ext = (name.split('.').pop() || '').toLowerCase();
+        const sets = {
+          archive: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'iso', 'tgz', '7zip'],
+          app: ['exe', 'msi', 'msix', 'appx', 'bat', 'cmd', 'apk', 'dmg', 'deb', 'rpm', 'bin'],
+          doc: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv', 'epub'],
+          video: ['mp4', 'mkv', 'avi', 'mov', 'webm', 'wmv', 'flv', 'm4v', '3gp'],
+          audio: ['mp3', 'wav', 'flac', 'm4a', 'ogg', 'aac', 'wma', 'opus'],
+          image: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff']
+        };
+        for (const k in sets) if (sets[k].includes(ext)) return { kind: k, ext: ext.toUpperCase() };
+        return { kind: 'other', ext: (ext && ext.length <= 4 ? ext.toUpperCase() : 'FILE') };
+      };
+
+      const ICONS = {
+        video:   '<polygon points="6 4 20 12 6 20 6 4"/>',
+        audio:   '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+        archive: '<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>',
+        app:     '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3"/>',
+        doc:     '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>',
+        image:   '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+        other:   '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'
+      };
+
+      // Render real Windows shell icon when available, otherwise fall back to SVG colour tile.
+      const setIcon = (box, k, iconBase64) => {
+        box.textContent = '';
+        if (iconBase64) {
+          box.className = box.className.replace(/\b(archive|app|doc|video|audio|image|other)\b/g, '').trim() + ' shell-img';
+          const img = document.createElement('img');
+          img.src = 'data:image/png;base64,' + iconBase64;
+          img.alt = k.ext;
+          box.appendChild(img);
+        } else {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.innerHTML = ICONS[k.kind] || ICONS.other;
+          box.appendChild(svg);
+          box.appendChild(el('span', '', k.ext));
+        }
+      };
+
+      const actButton = (title, path, cls, onClick) => {
+        const b = el('button', 'act-btn' + (cls ? ' ' + cls : ''));
+        b.title = title;
+        b.appendChild(svgIcon(path));
+        b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
+        return b;
+      };
+
+      // ---------- In-Place Card Builder & Updater (No Flickering on Hover) ----------
+      const cardMap = new Map(); // id -> card controller object
+
+      const createCard = (d) => {
+        const card = el('div', 'card');
+        card.dataset.id = d.id;
+
+        const ico = el('div', 'ico');
+        card.appendChild(ico);
+
+        const info = el('div', 'info');
+        const nameRow = el('div', 'name-row');
+        const name = el('div', 'name');
+        nameRow.appendChild(name);
+        info.appendChild(nameRow);
+
+        const src = el('div', 'src');
+        info.appendChild(src);
+
+        const statusLine = el('div', 'status-line');
+        info.appendChild(statusLine);
+
+        const bar = el('div', 'bar');
+        const barFill = document.createElement('i');
+        bar.appendChild(barFill);
+        info.appendChild(bar);
+
+        card.appendChild(info);
+
+        const actions = el('div', 'card-actions');
+        card.appendChild(actions);
+
+        const cardObj = {
+          id: d.id,
+          el: card,
+          ico,
+          name,
+          src,
+          statusLine,
+          bar,
+          barFill,
+          actions,
+          lastStatus: null,
+          lastKindKey: null,
+          lastFileExists: null,
+          clickHandler: null
+        };
+
+        updateCard(d, cardObj);
+        return cardObj;
+      };
+
+      const updateCard = (d, cardObj) => {
+        const done = d.status === 'completed';
+        const downloading = d.status === 'downloading';
+        const paused = d.status === 'paused';
+        const queued = d.status === 'queued';
+        const failed = d.status === 'failed';
+        const gone = done && d.fileExists === false;
+
+        // Update card click for completed files
+        if (done && !gone) {
+          if (!cardObj.clickHandler) {
+            cardObj.clickHandler = () => send({ type: 'open-download', id: d.id });
+            cardObj.el.addEventListener('click', cardObj.clickHandler);
+          }
+        } else if (cardObj.clickHandler) {
+          cardObj.el.removeEventListener('click', cardObj.clickHandler);
+          cardObj.clickHandler = null;
+        }
+
+        // Card classes
+        cardObj.el.className = 'card' + (done && !gone ? ' openable' : '') + (gone ? ' gone' : '');
+
+        // Icon — prefer real Windows shell icon, fall back to SVG colour tile
+        const k = kindOf(d.fileName || '');
+        // The icon KEY is part of the change check: a finished program swaps its generic type icon for its own icon
+        // (new key, but still "has an icon"), and that swap must be drawn without a page reload.
+        const kindKey = k.kind + ':' + k.ext + ':' + (d.iconBase64 ? '1' : '0') + ':' + (d.iconKey || '');
+        if (cardObj.lastKindKey !== kindKey) {
+          cardObj.ico.className = 'ico ' + (d.iconBase64 ? '' : k.kind);
+          setIcon(cardObj.ico, k, d.iconBase64);
+          cardObj.lastKindKey = kindKey;
+        }
+
+        // Name & URL
+        if (cardObj.name.textContent !== (d.fileName || '(unnamed)')) {
+          cardObj.name.textContent = d.fileName || '(unnamed)';
+          cardObj.name.title = d.fileName || '';
+        }
+        if (cardObj.src.textContent !== (d.url || '')) {
+          cardObj.src.textContent = d.url || '';
+          cardObj.src.title = d.url || '';
+        }
+
+        // Status line
+        let statusStr = '';
+        let statusCls = '';
+        if (downloading) {
+          const part = d.totalBytes > 0 ? fmtBytes(d.receivedBytes) + ' of ' + fmtBytes(d.totalBytes) : fmtBytes(d.receivedBytes);
+          const pct = d.totalBytes > 0 ? ' (' + Math.floor(d.progress) + '%)' : '';
+          statusStr = part + pct + (d.speed && d.speed !== '-' ? ' • ' + d.speed : '');
+        } else if (paused) {
+          statusStr = 'Paused • ' + fmtBytes(d.receivedBytes) + (d.totalBytes > 0 ? ' of ' + fmtBytes(d.totalBytes) : '');
+          statusCls = 'paused';
+        } else if (queued) {
+          statusStr = d.queuePosition > 0 ? ('Waiting in queue (#' + d.queuePosition + ')') : 'Starting...';
+        } else if (failed) {
+          statusStr = 'Failed' + (d.errorMessage ? ' - ' + d.errorMessage : ' - Link may have expired');
+          statusCls = 'failed';
+        } else if (done) {
+          statusStr = gone ? 'File deleted from disk' : fmtBytes(d.totalBytes || d.receivedBytes) + ' • ' + ago(d.completedAt || d.startedAt);
+          statusCls = gone ? 'gone' : 'done';
+        }
+
+        cardObj.statusLine.className = 'status-line ' + statusCls;
+        cardObj.statusLine.textContent = statusStr;
+
+        // Progress bar
+        if (downloading || paused || queued) {
+          cardObj.bar.style.display = 'block';
+          cardObj.bar.className = 'bar' + (paused ? ' paused' : queued ? ' wait' : '');
+          cardObj.barFill.style.width = Math.max(0, Math.min(100, d.progress || 0)) + '%';
+        } else {
+          cardObj.bar.style.display = 'none';
+        }
+
+        // Actions: ONLY recreate buttons when status state actually changes to avoid losing hover focus!
+        const statusKey = d.status + ':' + (d.fileExists === false ? 'gone' : 'exists');
+        if (cardObj.lastStatus !== statusKey) {
+          cardObj.lastStatus = statusKey;
+          cardObj.actions.textContent = '';
+
+          if (downloading) {
+            cardObj.actions.appendChild(actButton('Pause Download', 'M6 4h4v16H6zM14 4h4v16h-4z', 'warn', () => {
+              send({ type: 'pause-download', id: d.id });
+            }));
+          } else if (paused) {
+            cardObj.actions.appendChild(actButton('Resume Download', 'M5 3l14 9-14 9V3z', 'accent', () => {
+              send({ type: 'resume-download', id: d.id });
+            }));
+          }
+
+          if (failed) {
+            cardObj.actions.appendChild(actButton('Retry download', 'M5 3l14 9-14 9V3z', 'accent', () => {
+              send({ type: 'resume-download', id: d.id });
+            }));
+          }
+
+          // Restart / Redownload button
+          cardObj.actions.appendChild(actButton('Restart from beginning', 'M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10', '', () => {
+            send({ type: 'restart-download', id: d.id });
+          }));
+
+          // Refresh Download Address — only useful while the file is not yet finished
+          if (!done) {
+            cardObj.actions.appendChild(actButton('Refresh Download Address', 'M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z', 'accent', () => {
+              openRefreshModal(d);
+            }));
+          }
+
+          if (done && !gone) {
+            cardObj.actions.appendChild(actButton('Show in folder', 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z', '', () => {
+              send({ type: 'show-download', id: d.id });
+            }));
+          }
+
+          // Copy Link
+          cardObj.actions.appendChild(actButton('Copy download link', 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71', '', () => {
+            send({ type: 'copy-download-link', id: d.id });
+            showToast('Download link copied to clipboard');
+          }));
+
+          // Delete button
+          cardObj.actions.appendChild(actButton('Delete download', 'M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', 'danger', () => {
+            openDeleteModal(d);
+          }));
+        }
+      };
+
+      // ---------- Filter & Stable Render ----------
+      const render = () => {
+        const q = searchEl.value.trim().toLowerCase();
+        
+        let filtered = items.filter(d => {
+          if (currentFilter === 'active') {
+            if (d.status !== 'downloading' && d.status !== 'queued' && d.status !== 'paused') return false;
+          } else if (currentFilter === 'completed') {
+            if (d.status !== 'completed') return false;
+          } else if (currentFilter !== 'all') {
+            const k = kindOf(d.fileName || '').kind;
+            if (k !== currentFilter) return false;
+          }
+
+          if (q) {
+            return (d.fileName || '').toLowerCase().includes(q) || (d.url || '').toLowerCase().includes(q);
+          }
+          return true;
+        });
+
+        // Update badges
+        const activeCount = items.filter(d => d.status === 'downloading' || d.status === 'queued').length;
+        document.getElementById('badgeAll').textContent = items.length;
+        const badgeActive = document.getElementById('badgeActive');
+        badgeActive.textContent = activeCount;
+        badgeActive.style.display = activeCount > 0 ? 'inline-block' : 'none';
+
+        // Clean up cards that no longer exist
+        const currentIds = new Set(items.map(d => d.id));
+        for (const [id, cardObj] of cardMap.entries()) {
+          if (!currentIds.has(id)) {
+            cardObj.el.remove();
+            cardMap.delete(id);
+          }
+        }
+
+        // Reconcile nodes without detaching existing DOM elements
+        const targetNodes = [];
+        let lastLabel = null;
+        for (const d of filtered) {
+          const label = dayLabel(d.startedAt);
+          if (label !== lastLabel) {
+            targetNodes.push({ type: 'header', text: label });
+            lastLabel = label;
+          }
+          let cardObj = cardMap.get(d.id);
+          if (!cardObj) {
+            cardObj = createCard(d);
+            cardMap.set(d.id, cardObj);
+          } else {
+            updateCard(d, cardObj);
+          }
+          targetNodes.push({ type: 'card', el: cardObj.el, id: d.id });
+        }
+
+        // Check if DOM structure needs rebuilding (items added, removed, reordered, or headers changed)
+        let structureChanged = false;
+        const currentChildren = Array.from(listEl.children);
+        if (currentChildren.length !== targetNodes.length) {
+          structureChanged = true;
+        } else {
+          for (let i = 0; i < targetNodes.length; i++) {
+            const target = targetNodes[i];
+            const current = currentChildren[i];
+            if (target.type === 'card') {
+              if (current !== target.el) { structureChanged = true; break; }
+            } else if (target.type === 'header') {
+              if (!current.classList.contains('group-title') || current.textContent !== target.text) {
+                structureChanged = true; break;
+              }
+            }
+          }
+        }
+
+        if (structureChanged) {
+          listEl.textContent = '';
+          for (const target of targetNodes) {
+            if (target.type === 'header') {
+              listEl.appendChild(el('div', 'group-title', target.text));
+            } else {
+              listEl.appendChild(target.el);
+            }
+          }
+        }
+
+        const none = filtered.length === 0;
+        emptyEl.classList.toggle('show', none);
+        if (none) {
+          document.getElementById('emptyTitle').textContent = items.length === 0 ? 'No downloads yet' : 'No matching downloads';
+          document.getElementById('emptyText').textContent = items.length === 0
+            ? 'Files you download will appear here.'
+            : 'Try changing your search or category filter.';
+        }
+
+        clearBtn.disabled = !items.some(d => d.status === 'completed' || d.status === 'failed');
+      };
+
+      // ---------- Modals Logic ----------
+      const openDeleteModal = (d) => {
+        pendingDeleteId = d.id;
+        modalDeleteDesc.textContent = `Do you want to remove "${d.fileName || 'this file'}" from your downloads list?`;
+        chkDeleteDisk.checked = false;
+        modalDelete.classList.add('open');
+      };
+
+      btnCancelDelete.addEventListener('click', () => {
+        modalDelete.classList.remove('open');
+        pendingDeleteId = null;
+      });
+
+      btnConfirmDelete.addEventListener('click', () => {
+        if (pendingDeleteId) {
+          send({
+            type: 'delete-download',
+            id: pendingDeleteId,
+            deleteFileFromDisk: chkDeleteDisk.checked
+          });
+          modalDelete.classList.remove('open');
+          pendingDeleteId = null;
+        }
+      });
+
+      const openRefreshModal = (d) => {
+        pendingRefreshId = d.id;
+        txtRefreshUrl.value = d.url || '';
+        modalRefresh.classList.add('open');
+        txtRefreshUrl.focus();
+        txtRefreshUrl.select();
+      };
+
+      btnCancelRefresh.addEventListener('click', () => {
+        modalRefresh.classList.remove('open');
+        pendingRefreshId = null;
+      });
+
+      btnConfirmRefresh.addEventListener('click', () => {
+        const newUrl = txtRefreshUrl.value.trim();
+        if (pendingRefreshId && newUrl) {
+          send({
+            type: 'refresh-download-link',
+            id: pendingRefreshId,
+            newUrl: newUrl
+          });
+          modalRefresh.classList.remove('open');
+          pendingRefreshId = null;
+          showToast('Resuming download with updated address…');
+        }
+      });
+
+      // Navigation filter click
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+          item.classList.add('active');
+          currentFilter = item.getAttribute('data-filter');
+          viewTitleEl.textContent = item.textContent.trim().split('\n')[0];
+          render();
+        });
+      });
+
+      // Header actions
+      searchEl.addEventListener('input', render);
+      document.getElementById('btnOpenFolder').addEventListener('click', () => send({ type: 'open-downloads-folder' }));
+      
+      clearBtn.addEventListener('click', () => {
+        document.getElementById('modalClear').classList.add('open');
+      });
+
+      const modalClear = document.getElementById('modalClear');
+      document.getElementById('btnCancelClear').addEventListener('click', () => modalClear.classList.remove('open'));
+      document.getElementById('btnConfirmClear').addEventListener('click', () => {
+        modalClear.classList.remove('open');
+        send({ type: 'clear-downloads', deleteFileFromDisk: false });
+      });
+
+      // Poll schedule (faster while downloading)
+      const schedule = () => {
+        clearTimeout(pollTimer);
+        const busy = items.some(d => d.status === 'downloading' || d.status === 'queued');
+        pollTimer = setTimeout(() => {
+          send({ type: 'get-downloads' });
+          schedule();
+        }, busy ? 600 : 3500);
+      };
+
+      // IPC message receiver
+      if (host) {
+        host.addEventListener('message', (event) => {
+          try {
+            const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            if (msg.type === 'downloads-data' && Array.isArray(msg.data)) {
+              if (msg.icons) Object.assign(iconCache, msg.icons);
+              items = msg.data;
+              for (const it of items) it.iconBase64 = it.iconKey ? iconCache[it.iconKey] : undefined;
+              render();
+              schedule();
+            }
+          } catch (e) { }
+        });
+      }
+
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) send({ type: 'get-downloads' }); });
+      window.addEventListener('focus', () => send({ type: 'get-downloads' }));
+
+      // ---------- Add link + queue settings ----------
+      if (host) {
+        const addUrlBox = document.getElementById('txtAddUrl');
+        const addUrlBtn = document.getElementById('btnAddUrl');
+        const maxBox = document.getElementById('txtMaxConcurrent');
+        const limitBox = document.getElementById('txtSpeedLimit');
+
+        const submitAddUrl = () => {
+          const url = addUrlBox.value.trim();
+          if (!url) { showToast('Paste a link first'); return; }
+          addUrlBtn.disabled = true;
+          send({ type: 'add-download', url: url });
+        };
+        addUrlBtn.addEventListener('click', submitAddUrl);
+        addUrlBox.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') submitAddUrl(); });
+
+        const pushSettings = () => send({
+          type: 'set-download-settings',
+          maxConcurrent: Math.max(1, parseInt(maxBox.value, 10) || 3),
+          speedLimitKBps: Math.max(0, parseInt(limitBox.value, 10) || 0)
+        });
+        maxBox.addEventListener('change', pushSettings);
+        limitBox.addEventListener('change', pushSettings);
+
+        host.addEventListener('message', (ev) => {
+          try {
+            const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+            if (m.type === 'add-download-result') {
+              addUrlBtn.disabled = false;
+              if (m.ok) { addUrlBox.value = ''; showToast('Download added'); }
+              else showToast(m.message || 'Could not add this link');
+            } else if (m.type === 'download-settings') {
+              if (document.activeElement !== maxBox) maxBox.value = m.maxConcurrent;
+              if (document.activeElement !== limitBox) limitBox.value = m.speedLimitKBps;
+            }
+          } catch (err) { }
+        });
+        send({ type: 'get-download-settings' });
+      }
+
+      send({ type: 'get-downloads' });
+    })();
+  </script>
+</body>
+</html>
+
+
