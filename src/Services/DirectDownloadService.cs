@@ -346,24 +346,7 @@ namespace CustomBrowser.Services
                 }
                 else
                 {
-                    try
-                    {
-                        if (File.Exists(item.SavePath))
-                        {
-                            long length = new FileInfo(item.SavePath).Length;
-                            item.ReceivedBytes = length;
-                            item.TotalBytes = length;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        AppLog.Debug("Could not read size of finished download", ex);
-                    }
-                    item.Speed = "-";
-                    item.Progress = 100;
-                    CustomBrowser.Helpers.MarkOfTheWeb.Apply(item.SavePath, item.Url, item.Referer); // before the UI offers "Open"
-                    item.Status = CustomStatus.Completed;
-                    DatabaseService.Instance.SaveDownload(item, packageJson: string.Empty); // finished: resume data no longer needed
+                    DownloadStore.CompleteFromDisk(item);
                     _sessions.TryRemove(item.Id, out _);
                     _packages.TryRemove(item.Id, out _);
                     SignalStart(item.Id, 0);

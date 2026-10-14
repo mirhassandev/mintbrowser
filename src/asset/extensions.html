@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extensions</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Colours come from tokens.css (never re-declare a token as var(--same-name)). */
+      color-scheme: dark;
+      --bg: var(--surface, #222222);
+      --muted: var(--text-muted, #929292);
+      --soft: var(--text-soft, #D1D1D1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+    }
+    body {
+      overflow-y: auto;
+      background:
+        radial-gradient(1000px 500px at 15% -10%, rgba(250, 250, 250, 0.05), transparent 60%),
+        radial-gradient(800px 400px at 95% 0%, rgba(255, 255, 255, 0.03), transparent 60%),
+        var(--bg);
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }
+
+    button, input { font-family: inherit; }
+    .hidden { display: none !important; }
+
+    .page { max-width: 880px; margin: 0 auto; padding: 36px 28px 90px; }
+
+    /* ---------- Header ---------- */
+    .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+    .header .logo { width: 28px; height: 28px; stroke: var(--accent); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+    .header .spacer { flex: 1; }
+    .subtitle { font-size: 13px; color: var(--muted); margin: 0 0 22px 42px; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 34px; padding: 0 14px; border-radius: var(--radius-m);
+      background: var(--panel); border: 1px solid var(--border); color: var(--soft);
+      font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+    }
+    .btn:hover:not(:disabled) { background: var(--panel-hover); color: #fff; }
+    .btn:focus-visible, .switch:focus-visible, .tab:focus-visible, .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    .btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+    .btn.primary:hover:not(:disabled) { background: var(--accent-hover); color: var(--text-on-accent); }
+    .btn.ghost { background: transparent; }
+    .btn.danger { color: var(--muted); background: transparent; }
+    .btn.danger:hover:not(:disabled) { color: var(--danger); border-color: rgba(255, 105, 97, 0.45); background: rgba(255, 105, 97, 0.08); }
+    .btn.small { height: 30px; padding: 0 12px; font-size: 12.5px; }
+
+    /* ---------- Tabs ---------- */
+    .tabs {
+      display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 20px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-pill);
+    }
+    .tab {
+      height: 32px; padding: 0 18px; border: none; border-radius: var(--radius-pill);
+      background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+    }
+    .tab:hover { color: #fff; }
+    .tab[aria-selected="true"] { background: var(--accent); color: var(--text-on-accent); }
+    .tab .n { opacity: 0.65; font-weight: 500; margin-left: 4px; }
+
+    /* ---------- Busy strip ---------- */
+    .busy {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; margin-bottom: 16px; border-radius: var(--radius-m);
+      background: var(--accent-soft); border: 1px solid var(--border); color: var(--soft); font-size: 13px;
+    }
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%; flex: none;
+      border: 2px solid rgba(255, 255, 255, 0.2); border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Toolbar above the list ---------- */
+    .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .count { font-size: 13px; color: var(--muted); font-weight: 500; flex: 1; }
+    .count b { color: var(--text); font-weight: 700; }
+    .field {
+      display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; min-width: 0;
+      background: var(--surface-field); border: 1px solid var(--border); border-radius: var(--radius-m);
+    }
+    .field svg { width: 15px; height: 15px; stroke: var(--muted); fill: none; stroke-width: 1.8; stroke-linecap: round; flex: none; }
+    .field input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text); font-size: 13px; }
+    .field input::placeholder { color: var(--text-tertiary); }
+    .field.search { width: 220px; }
+
+    /* ---------- Extension cards ---------- */
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 18px; border-radius: var(--radius-l);
+      background: var(--panel); border: 1px solid var(--border);
+      transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+    }
+    .card:hover { background: var(--panel-hover); }
+    .tile {
+      width: 46px; height: 46px; border-radius: var(--radius-m); flex: none;
+      display: grid; place-items: center; overflow: hidden;
+      background: var(--surface-raised); border: 1px solid var(--border);
+      font-size: 19px; font-weight: 700; color: var(--soft);
+    }
+    .tile img { width: 100%; height: 100%; object-fit: contain; }
+    .card .body { flex: 1; min-width: 0; }
+    .card .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card .name { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+    .card .version { font-size: 12px; color: var(--muted); }
+    .badge {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.08); color: var(--soft);
+    }
+    .badge.off { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .card .desc {
+      font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 4px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card .meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11.5px; color: var(--text-tertiary); }
+    .card .meta code { font-family: 'Cascadia Mono', Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .linkbtn { background: none; border: none; color: var(--muted); font-size: 11.5px; cursor: pointer; text-decoration: underline; padding: 0; }
+    .linkbtn:hover { color: #fff; }
+    .card .actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    .card .side { display: flex; align-items: center; padding-top: 4px; }
+    .card.is-off .tile, .card.is-off .name, .card.is-off .desc, .card.is-off .version { opacity: 0.5; }
+
+    /* ---------- Switch: follows the monochrome theme (white when on, dark knob) ---------- */
+    .switch {
+      position: relative; width: 40px; height: 22px; flex: none; border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.10); border: 1px solid var(--border); cursor: pointer;
+      transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+    }
+    .switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-muted);
+      transition: transform var(--t-base) var(--ease), background var(--t-base) var(--ease);
+    }
+    .switch:hover:not(:disabled)::after { background: var(--soft); }
+    .switch[aria-checked="true"] { background: var(--accent); border-color: var(--accent); }
+    .switch[aria-checked="true"]::after { background: var(--text-on-accent); transform: translateX(18px); }
+    .switch:disabled { opacity: 0.5; cursor: default; }
+
+    /* ---------- Store ---------- */
+    .panel {
+      padding: 18px 20px; margin-bottom: 26px; border-radius: var(--radius-l);
+      background: var(--panel); border: 1px solid var(--border);
+    }
+    .panel h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .panel p { font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+    .panel .row { display: flex; gap: 10px; margin-top: 14px; }
+    .panel .row .field { flex: 1; }
+    .panel .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 2px 12px; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .grid .card { align-items: center; padding: 14px 16px; gap: 14px; }
+    .grid .card .desc { -webkit-line-clamp: 1; margin-top: 2px; }
+    .grid .card .side { padding-top: 0; }
+
+    /* ---------- Empty state / footer ---------- */
+    .empty { text-align: center; color: var(--muted); padding: 64px 20px; font-size: 14px; line-height: 1.6; }
+    .empty b { display: block; color: var(--soft); font-size: 16px; margin-bottom: 6px; }
+    .empty .btn { margin-top: 16px; }
+    .note { margin-top: 26px; font-size: 12px; line-height: 1.6; color: var(--text-tertiary); }
+
+    /* ---------- Toast ---------- */
+    .toast {
+      position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 12px);
+      max-width: min(560px, calc(100vw - 40px)); padding: 11px 18px; border-radius: var(--radius-m);
+      background: var(--surface-raised); border: 1px solid var(--border); box-shadow: var(--shadow-popup);
+      font-size: 13px; color: var(--text); opacity: 0; pointer-events: none;
+      transition: opacity var(--t-base) var(--ease), transform var(--t-base) var(--ease);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.error { border-color: rgba(255, 105, 97, 0.5); color: #ffb3ae; }
+
+    @media (max-width: 700px) {
+      .page { padding: 24px 16px 70px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { flex-wrap: wrap; }
+      .field.search { width: 100%; }
+      .toolbar { flex-wrap: wrap; }
+      .panel .row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="header">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>
+      <h1>Extensions</h1>
+      <span class="spacer"></span>
+      <button class="btn" id="add-extension" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add from file&hellip;
+      </button>
+    </div>
+    <p class="subtitle">Turn extensions on or off, open their settings, or find new ones in the store.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-installed" role="tab" aria-selected="true" type="button">Installed<span class="n" id="tab-count"></span></button>
+      <button class="tab" id="tab-store" role="tab" aria-selected="false" type="button">Get extensions</button>
+    </div>
+
+    <div class="busy hidden" id="busy" role="status"><span class="spinner" aria-hidden="true"></span><span id="busy-text"></span></div>
+
+    <!-- ===================== Installed ===================== -->
+    <section id="view-installed">
+      <div class="toolbar">
+        <div class="count" id="count"></div>
+        <label class="field search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="filter" type="search" placeholder="Search installed" autocomplete="off" spellcheck="false" />
+        </label>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty hidden" id="empty">
+        <b>No extensions installed</b>
+        Find one in the store, or add a .crx / .zip package from your computer.
+        <div><button class="btn primary" id="empty-store" type="button">Browse the store</button></div>
+      </div>
+      <div class="empty hidden" id="no-match"><b>No matches</b>Nothing installed matches that search.</div>
+      <p class="note">
+        Extensions can read and change the pages you visit &mdash; only add ones you trust.
+        Turning an extension on or off applies to pages you open or reload afterwards.
+        Built-in extensions can be turned off or removed; the ones provided by the browser engine can only be turned off.
+      </p>
+    </section>
+
+    <!-- ===================== Store ===================== -->
+    <section id="view-store" class="hidden">
+      <div class="panel">
+        <h2>Add by link or ID</h2>
+        <p>
+          Open a store, pick an extension, copy the page address and paste it here. Chrome Web Store is tried first and
+          Edge Add-ons is the fallback when something is missing. You can also paste a direct <b>.crx</b> link.
+        </p>
+        <div class="row">
+          <label class="field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.43M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.33-1.33"/></svg>
+            <input id="store-input" type="text" placeholder="Store link, extension ID or .crx link" autocomplete="off" spellcheck="false" />
+          </label>
+          <button class="btn primary" id="store-install" type="button">Install</button>
+        </div>
+        <div class="links">
+          <button class="btn small ghost" id="open-chrome" type="button">Chrome Web Store &#8599;</button>
+          <button class="btn small ghost" id="open-edge" type="button">Edge Add-ons &#8599;</button>
+        </div>
+      </div>
+
+      <div class="section-title">Popular</div>
+      <div class="grid" id="popular"></div>
+
+      <p class="note">
+        Extensions run on the same engine as the pages you browse. Some store extensions rely on Chrome features this engine does not provide,
+        so not every one will work. Every install is confirmed first, and extensions you add can be removed at any time.
+      </p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (function () {
+      'use strict';
+      const host = window.chrome && window.chrome.webview;
+      const $ = (id) => document.getElementById(id);
+      const post = (msg) => { if (host) host.postMessage(JSON.stringify(msg)); };
+
+      // Popular picks. `match` is how an installed extension is recognised by name (unpacked IDs never equal store IDs).
+      const POPULAR = [
+        { name: 'uBlock Origin', match: 'ublock', desc: 'Efficient ad and tracker blocker (official GitHub release).', action: 'ublock' },
+        { name: 'Bitwarden', match: 'bitwarden', desc: 'Free password manager.', id: 'nngceckbapebfimnlniiiahkandclblb' },
+        { name: 'Dark Reader', match: 'dark reader', desc: 'Dark mode for every website.', id: 'eimadpbcbfnmbkopoojfekhnkhdbieeh' },
+        { name: 'SponsorBlock', match: 'sponsorblock', desc: 'Skip sponsor segments in YouTube videos.', id: 'mnjggcdmjocbbbhaepdhchncahnbgone' },
+        { name: 'Return YouTube Dislike', match: 'return youtube dislike', desc: 'Brings dislike counts back to YouTube.', id: 'gebbhagfogifgggkldgodflihgfeippi' },
+        { name: 'Privacy Badger', match: 'privacy badger', desc: 'Learns and blocks invisible trackers.', id: 'pkehgijcmpdhfbdbbnkijodmdjhbjlgp' },
+        { name: 'Vimium', match: 'vimium', desc: 'Keyboard shortcuts for browsing.', id: 'dbepggeogbaibhgnhhndojpepiihcmeb' },
+        { name: 'Stylus', match: 'stylus', desc: 'Restyle any website with custom CSS.', id: 'clngdbkpkpeebahjckkjfobafhncgmne' }
+      ];
+
+      let rows = [];
+      let busy = false;
+      let toastTimer = 0;
+      let view = 'installed';
+
+      // ---------- helpers ----------
+      function el(tag, cls, text) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function button(label, cls, onClick) {
+        const b = el('button', 'btn small' + (cls ? ' ' + cls : ''), label);
+        b.type = 'button';
+        b.addEventListener('click', onClick);
+        return b;
+      }
+      function letter(name) { return (name || '?').trim().charAt(0).toUpperCase(); }
+      function toast(text, isError) {
+        if (!text) return;
+        const t = $('toast');
+        t.textContent = text;
+        t.classList.toggle('error', !!isError);
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 4200);
+      }
+      function setBusy(on, text) {
+        busy = on;
+        $('busy').classList.toggle('hidden', !on);
+        $('busy-text').textContent = text || '';
+        $('add-extension').disabled = on;
+        $('store-install').disabled = on;
+        document.querySelectorAll('.card button, .links button').forEach((b) => { b.disabled = on; });
+      }
+      function isInstalled(match) {
+        return rows.some((r) => (r.name || '').toLowerCase().includes(match));
+      }
+
+      // ---------- tabs ----------
+      function showView(next) {
+        view = next;
+        const installed = next === 'installed';
+        $('view-installed').classList.toggle('hidden', !installed);
+        $('view-store').classList.toggle('hidden', installed);
+        $('tab-installed').setAttribute('aria-selected', installed ? 'true' : 'false');
+        $('tab-store').setAttribute('aria-selected', installed ? 'false' : 'true');
+        if (!installed) renderPopular();
+      }
+
+      // ---------- installed list ----------
+      function card(x) {
+        const root = el('article', 'card' + (x.enabled ? '' : ' is-off'));
+
+        const tile = el('div', 'tile');
+        if (x.icon) {
+          const img = document.createElement('img');
+          img.alt = '';
+          img.src = x.icon;
+          img.addEventListener('error', () => { tile.textContent = letter(x.name); img.remove(); });
+          tile.appendChild(img);
+        } else {
+          tile.textContent = letter(x.name);
+        }
+        root.appendChild(tile);
+
+        const body = el('div', 'body');
+        const title = el('div', 'title-row');
+        title.appendChild(el('span', 'name', x.name || 'Unnamed extension'));
+        if (x.version) title.appendChild(el('span', 'version', 'v' + x.version));
+        if (x.builtIn) title.appendChild(el('span', 'badge', 'Built-in'));
+        else if (!x.removable) title.appendChild(el('span', 'badge', 'Engine'));
+        if (!x.enabled) title.appendChild(el('span', 'badge off', 'Off'));
+        body.appendChild(title);
+
+        if (x.description) body.appendChild(el('div', 'desc', x.description));
+
+        const meta = el('div', 'meta');
+        meta.appendChild(el('span', null, 'ID'));
+        meta.appendChild(el('code', null, x.id));
+        const copy = el('button', 'linkbtn', 'Copy');
+        copy.type = 'button';
+        copy.addEventListener('click', () => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(x.id).then(() => toast('Extension ID copied.'), () => toast('Could not copy the ID.', true));
+          }
+        });
+        meta.appendChild(copy);
+        body.appendChild(meta);
+
+        if (x.hasOptions || x.removable) {
+          const actions = el('div', 'actions');
+          if (x.hasOptions) actions.appendChild(button('Settings', '', () => post({ type: 'open-extension-options', id: x.id })));
+          if (x.removable) actions.appendChild(button('Remove', 'danger', () => post({ type: 'remove-extension', id: x.id })));
+          body.appendChild(actions);
+        }
+        root.appendChild(body);
+
+        const side = el('div', 'side');
+        const sw = el('button', 'switch');
+        sw.type = 'button';
+        sw.setAttribute('role', 'switch');
+        sw.setAttribute('aria-checked', x.enabled ? 'true' : 'false');
+        sw.setAttribute('aria-label', (x.enabled ? 'Turn off ' : 'Turn on ') + (x.name || 'extension'));
+        sw.title = x.enabled ? 'Turn off' : 'Turn on';
+        sw.addEventListener('click', () => {
+          const next = !(sw.getAttribute('aria-checked') === 'true');
+          sw.setAttribute('aria-checked', next ? 'true' : 'false'); // instant feedback; the list is refreshed by the host
+          root.classList.toggle('is-off', !next);
+          post({ type: 'set-extension-enabled', id: x.id, enabled: next });
+        });
+        side.appendChild(sw);
+        root.appendChild(side);
+        return root;
+      }
+
+      function render() {
+        const query = $('filter').value.trim().toLowerCase();
+        const shown = rows.filter((x) => !query || (x.name || '').toLowerCase().includes(query) || (x.description || '').toLowerCase().includes(query));
+
+        const list = $('list');
+        list.textContent = '';
+        shown.forEach((x) => list.appendChild(card(x)));
+
+        const on = rows.filter((x) => x.enabled).length;
+        const count = $('count');
+        count.textContent = '';
+        if (rows.length) {
+          count.append(el('b', null, String(on)), ' of ' + rows.length + ' on');
+        }
+        $('tab-count').textContent = rows.length ? String(rows.length) : '';
+
+        $('empty').classList.toggle('hidden', rows.length > 0);
+        $('no-match').classList.toggle('hidden', rows.length === 0 || shown.length > 0);
+        $('filter').closest('.field').classList.toggle('hidden', rows.length < 2);
+        if (view === 'store') renderPopular();
+        if (busy) setBusy(true, $('busy-text').textContent);
+      }
+
+      // ---------- store ----------
+      function renderPopular() {
+        const grid = $('popular');
+        grid.textContent = '';
+        POPULAR.forEach((p) => {
+          const root = el('article', 'card');
+          root.appendChild(el('div', 'tile', letter(p.name)));
+          const body = el('div', 'body');
+          body.appendChild(el('div', 'name', p.name));
+          body.appendChild(el('div', 'desc', p.desc));
+          root.appendChild(body);
+
+          const side = el('div', 'side');
+          if (isInstalled(p.match)) {
+            const b = button('Installed', 'ghost', () => {});
+            b.disabled = true;
+            side.appendChild(b);
+          } else {
+            side.appendChild(button('Install', 'primary', () => {
+              if (p.action === 'ublock') post({ type: 'install-ublock' });
+              else post({ type: 'install-from-store', input: p.id });
+            }));
+          }
+          root.appendChild(side);
+          grid.appendChild(root);
+        });
+        if (busy) document.querySelectorAll('#popular button').forEach((b) => { b.disabled = true; });
+      }
+
+      function installFromInput() {
+        const value = $('store-input').value.trim();
+        if (!value) { toast('Paste a store link, an extension ID or a .crx link first.', true); return; }
+        post({ type: 'install-from-store', input: value });
+      }
+
+      // ---------- host messages ----------
+      if (host) {
+        host.addEventListener('message', (e) => {
+          const msg = e.data;
+          if (!msg || typeof msg !== 'object') return;
+          if (msg.type === 'extensions-data') {
+            rows = Array.isArray(msg.data) ? msg.data : [];
+            render();
+          } else if (msg.type === 'extension-busy') {
+            setBusy(!!msg.busy, msg.message);
+          } else if (msg.type === 'extension-result') {
+            if (msg.message) toast(msg.message, !msg.ok);
+            if (msg.ok) $('store-input').value = '';
+          }
+        });
+      }
+
+      $('tab-installed').addEventListener('click', () => showView('installed'));
+      $('tab-store').addEventListener('click', () => showView('store'));
+      $('empty-store').addEventListener('click', () => showView('store'));
+      $('filter').addEventListener('input', render);
+      $('add-extension').addEventListener('click', () => post({ type: 'install-extension' }));
+      $('store-install').addEventListener('click', installFromInput);
+      $('store-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') installFromInput(); });
+      $('open-chrome').addEventListener('click', () => post({ type: 'open-store', store: 'chrome' }));
+      $('open-edge').addEventListener('click', () => post({ type: 'open-store', store: 'edge' }));
+
+      // Come back to this tab: show the current state.
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) post({ type: 'get-extensions' }); });
+
+      post({ type: 'get-extensions' });
+    })();
+  </script>
+</body>
+</html>

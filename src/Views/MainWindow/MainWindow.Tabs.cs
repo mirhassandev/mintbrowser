@@ -48,7 +48,7 @@ namespace CustomBrowser
             };
             var tab = new BrowserTab
             {
-                Title = isNewTab ? "New Tab" : IsDownloadsPage(initialUrl) ? "Downloads" : IsLibraryPage(initialUrl) ? LibraryTitle(LibrarySectionOf(initialUrl)) : (GetSuggestionDomain(initialUrl) ?? "Loading..."),
+                Title = isNewTab ? "New Tab" : IsDownloadsPage(initialUrl) ? "Downloads" : IsExtensionsPage(initialUrl) ? "Extensions" : IsLibraryPage(initialUrl) ? LibraryTitle(LibrarySectionOf(initialUrl)) : (GetSuggestionDomain(initialUrl) ?? "Loading..."),
                 Url = initialUrl,
                 Favicon = isNewTab ? GetLocalFaviconFileUri() : GetFaviconSuggestionUrl(initialUrl),
                 WebView = webView
@@ -205,7 +205,6 @@ namespace CustomBrowser
                     {
                         try
                         {
-                            MainWindow owner = GetTabOwner(tab) ?? this;
                             _dbService.AddHistory(core.DocumentTitle, core.Source, tab.Favicon ?? "");
                         }
                         catch (Exception ex)
@@ -272,7 +271,7 @@ namespace CustomBrowser
                 {
                     // WebView2 renderer/browser process failed: log it. We intentionally do NOT close
                     // the tab here — WebView2 shows its own sad-tab UI and the user can reload.
-                    AppLog.Warn($"WebView2 ProcessFailed: kind={e.ProcessFailedKind}, pid={e.ProcessDescription}");
+                    AppLog.Warn($"WebView2 ProcessFailed: kind={e.ProcessFailedKind}, process={e.ProcessDescription}");
                 };
                 core.ContainsFullScreenElementChanged += (s, e) =>
                 {
@@ -386,6 +385,11 @@ namespace CustomBrowser
                             string? addError = await AddDownloadFromLinkAsync(addUrlText, core);
                             core.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "add-download-result", ok = addError == null, message = addError }, BridgeJsonOptions));
                             core.PostWebMessageAsJson(BuildDownloadsMessage());
+                        }
+                        else if (msgType != null && ExtensionMessageTypes.Contains(msgType))
+                        {
+                            // Extensions page: turn on/off, remove, add. Removals and downloads are confirmed in a native dialog first.
+                            await owner.HandleExtensionsMessageAsync(core, msgType, root);
                         }
                         else if (msgType != null && LibraryMessageTypes.Contains(msgType))
                         {

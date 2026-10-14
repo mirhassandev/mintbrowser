@@ -62,6 +62,7 @@ namespace CustomBrowser
         {
             if (string.IsNullOrEmpty(url) || url == NewTabUrl) return string.Empty;
             if (IsLibraryPage(url)) return "mint://" + LibrarySectionOf(url);
+            if (IsExtensionsPage(url)) return "mint://extensions";
             return IsDownloadsPage(url) ? "mint://downloads" : url;
         }
         private static bool IsDownloadsAlias(string input)
@@ -1140,17 +1141,35 @@ namespace CustomBrowser
         }
         private static async Task AutoLoadExtensionsAsync(CoreWebView2Profile profile)
         {
+            // The on/off choice made on the extensions page: the engine switches an extension back on every time it is added.
+            HashSet<string> turnedOff = LoadDisabledExtensionKeys();
+            HashSet<string> removedKeys = LoadRemovedExtensionKeys();
             foreach (string root in GetExtensionRoots())
             {
                 if (!Directory.Exists(root)) continue;
+                bool builtIn = string.Equals(root, BundledExtensionsRoot, StringComparison.OrdinalIgnoreCase);
                 foreach (var dir in Directory.GetDirectories(root))
                 {
+                    // Removed on the extensions page but a file was still in use at that moment: finish the job now.
+                    if (File.Exists(Path.Combine(dir, ExtensionRemovedMarker)))
+                    {
+                        RemoveExtensionFolder(dir);
+                        continue;
+                    }
                     if (!File.Exists(Path.Combine(dir, "manifest.json"))) continue;
+                    if (builtIn && removedKeys.Contains("bundled:" + Path.GetFileName(dir))) continue;
                     try
                     {
                         var ext = await profile.AddBrowserExtensionAsync(dir);
+                        string key = (builtIn ? "bundled:" : "user:") + Path.GetFileName(dir);
+                        ExtensionFolders[ext.Id] = new ManagedExtension(key, dir, builtIn);
                         AppLog.Info($"Extension loaded: {ext.Name} ({dir})");
-                        if (string.Equals(root, BundledExtensionsRoot, StringComparison.OrdinalIgnoreCase))
+                        if (turnedOff.Contains(key))
+                        {
+                            await ext.EnableAsync(false);
+                            AppLog.Info($"Extension '{ext.Name}' stays turned off (your choice on the extensions page)");
+                        }
+                        if (builtIn)
                         {
                             await RemoveStaleDuplicatesAsync(profile, ext);
                         }

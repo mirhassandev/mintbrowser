@@ -228,7 +228,7 @@ namespace CustomBrowser.Services.Streams
             }
             catch (OperationCanceledException)
             {
-                try { proc.Kill(true); } catch (Exception) { }
+                try { proc.Kill(true); } catch (Exception) { /* already gone */ }
                 throw;
             }
             string text;

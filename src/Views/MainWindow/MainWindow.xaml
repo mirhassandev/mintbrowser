@@ -186,8 +186,6 @@
             </Setter>
         </Style>
 
-        <!-- Legacy alias so any remaining NavButtonStyle references still compile -->
-        <Style x:Key="NavButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernNavBtnStyle}"/>
         <!-- Tint laid over the wallpaper behind the tab bar + toolbar. This is only the default (dark wallpaper) value:
              the code-behind (UpdateChromeTint) replaces it at runtime, darker for bright wallpapers, so the icons stay visible. -->
         <LinearGradientBrush x:Key="ChromeTintBrush" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#59000000" Offset="0"/><GradientStop Color="#1A000000" Offset="1"/></LinearGradientBrush>
@@ -954,9 +952,9 @@
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                               Fill="Transparent" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
-                    <!-- Extensions / uBlock -->
-                    <Button x:Name="BtnUBlock" Click="BtnUBlock_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="uBlock Origin / Extensions">
-                        <Path Data="M 12,2 L 19,6.5 L 19,12 C 19,15.87 15.87,19.4 12,21 C 8.13,19.4 5,15.87 5,12 L 5,6.5 Z"
+                    <!-- Extensions manager (mint://extensions) -->
+                    <Button x:Name="BtnUBlock" Click="BtnUBlock_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Extensions">
+                        <Path Data="M 19.439 7.85 c -0.049 0.322 0.059 0.648 0.289 0.878 l 1.568 1.568 c 0.47 0.47 0.706 1.087 0.706 1.704 s -0.235 1.233 -0.706 1.704 l -1.611 1.611 a 0.98 0.98 0 0 1 -0.837 0.276 c -0.47 -0.07 -0.802 -0.48 -0.968 -0.925 a 2.501 2.501 0 1 0 -3.214 3.214 c 0.446 0.166 0.855 0.497 0.925 0.968 a 0.979 0.979 0 0 1 -0.276 0.837 l -1.61 1.61 a 2.404 2.404 0 0 1 -1.705 0.707 a 2.402 2.402 0 0 1 -1.704 -0.706 l -1.568 -1.568 a 1.026 1.026 0 0 0 -0.877 -0.29 c -0.493 0.074 -0.84 0.504 -1.02 0.968 a 2.5 2.5 0 1 1 -3.237 -3.237 c 0.464 -0.18 0.894 -0.527 0.967 -1.02 a 1.026 1.026 0 0 0 -0.289 -0.877 l -1.568 -1.568 A 2.402 2.402 0 0 1 1.998 12 c 0 -0.617 0.236 -1.234 0.706 -1.704 L 4.23 8.77 c 0.24 -0.24 0.581 -0.353 0.917 -0.303 c 0.515 0.077 0.877 0.528 1.073 1.01 a 2.5 2.5 0 1 0 3.259 -3.259 c -0.482 -0.196 -0.933 -0.558 -1.01 -1.073 c -0.05 -0.336 0.062 -0.676 0.303 -0.917 l 1.525 -1.525 A 2.402 2.402 0 0 1 12 1.998 c 0.617 0 1.234 0.236 1.704 0.706 l 1.568 1.568 c 0.23 0.23 0.556 0.338 0.877 0.29 c 0.493 -0.074 0.84 -0.504 1.02 -0.968 a 2.5 2.5 0 1 1 3.237 3.237 c -0.464 0.18 -0.894 0.527 -0.967 1.02 Z"
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                               Fill="Transparent" Width="14" Height="14" Stretch="Uniform"/>

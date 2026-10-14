@@ -197,6 +197,32 @@ namespace CustomBrowser.Services
             }
         }
 
+        /// <summary>
+        /// Marks a download whose file is complete on disk as Completed: takes the real size from the file, stamps the Mark of the Web
+        /// (before the status flips, so the UI never offers "Open" for an unmarked file) and saves the record. Its resume data is no longer needed.
+        /// </summary>
+        internal static void CompleteFromDisk(DownloadItem item)
+        {
+            try
+            {
+                if (File.Exists(item.SavePath))
+                {
+                    long length = new FileInfo(item.SavePath).Length;
+                    item.ReceivedBytes = length;
+                    item.TotalBytes = length;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Debug("Could not read size of finished download", ex);
+            }
+            item.Speed = "-";
+            item.Progress = 100;
+            MarkOfTheWeb.Apply(item.SavePath, item.Url, item.Referer);
+            item.Status = DownloadStatus.Completed;
+            DatabaseService.Instance.SaveDownload(item, packageJson: string.Empty);
+        }
+
         /// <summary>Saves the in-progress downloads to the database now. Must run on the UI thread (it reads the collection).</summary>
         public static void SaveNow()
         {

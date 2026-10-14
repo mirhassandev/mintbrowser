@@ -53,3 +53,4 @@ project.assets.json
 # ─── Log files written by the running app ────────────────────────────────────
 *.log
 
+*.bak

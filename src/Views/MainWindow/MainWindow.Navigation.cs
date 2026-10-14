@@ -111,6 +111,7 @@ namespace CustomBrowser
         private string ResolveNavigationTarget(string input, SearchEngineInfo? engine = null)
         {
             input = input.Trim();
+            if (IsExtensionsAlias(input)) return ExtensionsUrl; // mint://extensions, chrome://extensions, about:extensions
             if (IsDownloadsAlias(input)) return DownloadsUrl; // mint://downloads, chrome://downloads, about:downloads
             string? libraryTarget = ResolveLibraryAlias(input); // mint://history, mint://bookmarks, mint://passwords (and chrome:// / about: forms)
             if (libraryTarget != null) return libraryTarget;
@@ -1098,51 +1099,9 @@ namespace CustomBrowser
             }
         }
         // ------------------------------------------------------------------
-        // Extensions (uBlock)
+        // Extensions (opens the extensions page: mint://extensions)
         // ------------------------------------------------------------------
-        private async void BtnUBlock_Click(object sender, RoutedEventArgs e)
-        {
-            CoreWebView2? core = SelectedTab?.WebView?.CoreWebView2;
-            if (core == null) return;
-            try
-            {
-                var profile = core.Profile;
-                var extensions = await profile.GetBrowserExtensionsAsync();
-                foreach (var ext in extensions)
-                {
-                    if (ext.Name.Contains("uBlock", StringComparison.OrdinalIgnoreCase) ||
-                        ext.Id.Equals("cjpalhdlnbpafiamejdnhcphjbkeiagm", StringComparison.OrdinalIgnoreCase))
-                    {
-                        await AddNewTabAsync($"chrome-extension://{ext.Id}/dashboard.html");
-                        return;
-                    }
-                }
-                // Not loaded yet: try the copy that ships with the app before asking the user.
-                string bundledDir = Path.Combine(AppContext.BaseDirectory, "Extensions", "uBlockOrigin");
-                if (File.Exists(Path.Combine(bundledDir, "manifest.json")))
-                {
-                    var bundledExt = await profile.AddBrowserExtensionAsync(bundledDir);
-                    await AddNewTabAsync($"chrome-extension://{bundledExt.Id}/dashboard.html");
-                    return;
-                }
-                var dialog = new OpenFileDialog
-                {
-                    Title = "Select uBlock Origin manifest.json file",
-                    Filter = "Extension Manifest (manifest.json)|manifest.json"
-                };
-                if (dialog.ShowDialog() == true)
-                {
-                    string extensionFolder = Path.GetDirectoryName(dialog.FileName)!;
-                    var newExt = await profile.AddBrowserExtensionAsync(extensionFolder);
-                    await AddNewTabAsync($"chrome-extension://{newExt.Id}/dashboard.html");
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLog.Error("uBlock button failed", ex);
-                ThemedDialog.Show($"Could not load extension: {ex.Message}", "Extension Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        private void BtnUBlock_Click(object sender, RoutedEventArgs e) => OpenExtensionsTab();
     }
 }
 

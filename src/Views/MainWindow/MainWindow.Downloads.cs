@@ -237,24 +237,7 @@ namespace CustomBrowser
                 item.SavePath = finalPath; // WebView2 may have picked another name if the file appeared meanwhile
                 item.FileName = Path.GetFileName(finalPath);
             }
-            try
-            {
-                if (File.Exists(item.SavePath))
-                {
-                    long length = new FileInfo(item.SavePath).Length;
-                    item.ReceivedBytes = length;
-                    item.TotalBytes = length;
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLog.Debug("Could not read size of finished download", ex);
-            }
-            item.Speed = "-";
-            item.Progress = 100;
-            MarkOfTheWeb.Apply(item.SavePath, item.Url, item.Referer); // before the UI offers "Open"
-            item.Status = DownloadStatus.Completed;
-            DatabaseService.Instance.SaveDownload(item, packageJson: string.Empty);
+            DownloadStore.CompleteFromDisk(item);
         }
 
         /// <summary>
