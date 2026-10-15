@@ -101,7 +101,6 @@ namespace CustomBrowser
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, BitmapImage> _iconCache = new();
         private CancellationTokenSource? _suggestionCts;
         private bool _suppressSuggestionRefresh;
-        private readonly List<string> _recentQueries = new();
         private string _suggestionsQuery = string.Empty;      // the query the visible suggestion list was built for
         private bool _suggestionArrowNavigated;               // user moved the highlight with Up/Down
         private string _arrowNavOriginalText = string.Empty;  // typed text saved before arrow-key navigation
@@ -115,9 +114,8 @@ namespace CustomBrowser
         // Set true when the current CloseTab call was triggered by window.close() (WindowCloseRequested)
         // rather than by the user clicking the tab X button. Prevents quitting when a popup (e.g. OAuth) closes itself.
         private bool _scriptRequestedClose;
-        // Ctrl+Shift+T: reopen recently closed tabs (per-window, capped at 10)
-        private readonly Stack<string> _closedTabUrls = new();
-        private const int MaxClosedTabHistory = 10;
+        // Ctrl+Shift+T: the recently closed tabs live in ClosedTabStore (shared by all windows, kept across restarts).
+        private Action? _searchEngineChangedHandler; // kept in a field so MainWindow_Closed can unsubscribe it
         public ObservableCollection<AddressSuggestion> AddressSuggestions { get; } = new();
 
         // Injected on every page: detects drags of links, images, and selected text,
@@ -227,6 +225,11 @@ namespace CustomBrowser
             SearchUrl = "https://en.wikipedia.org/wiki/Special:Search?search={0}",
             Icon = EngineIcons.Wikipedia
         };
+        /// <summary>Every engine offered in the selector. The address bar's "is this a search page" check is built from it.</summary>
+        public static readonly SearchEngineInfo[] AllSearchEngines =
+        {
+            EngineGoogle, EngineBing, EngineDuckDuckGo, EngineMDN, EnginePerplexity, EngineWikipedia
+        };
         private SearchEngineInfo? _activeSearchEngine;
         public sealed class AddressSuggestion
         {
@@ -289,6 +292,15 @@ namespace CustomBrowser
             _transferredTab = transferredTab;
             InitializeComponent();
             DataContext = this;
+            ApplyPersistedSearchEngine();
+            ApplyPersistedSidebarState();
+            _searchEngineChangedHandler = () =>
+            {
+                Dispatcher.BeginInvoke(new Action(ApplyPersistedSearchEngine), DispatcherPriority.Background);
+            };
+            BrowserSettings.SearchEngineChanged += _searchEngineChangedHandler;
+            InitWallpaperSync();
+            InitDownloadFeedback();
             _openBrowserWindows.Add(this);
             if (transferredTab != null) _tabOwners[transferredTab] = this;
             _directDownloadService = DownloadStore.Service;
@@ -350,7 +362,7 @@ namespace CustomBrowser
             TxtAddressBar.IsKeyboardFocusWithinChanged += (_, _) => UpdateAddressBarDisplay();
             Closed += MainWindow_Closed;
             InitStreams();
-            Closing += (_, _) => { if (_transferredTab == null) SaveWindowPlacement(); }; // handle still alive here, so RestoreBounds is accurate
+            Closing += MainWindow_Closing; // asks first when work would be lost; saves the placement while the handle is still alive
         }
         // ------------------------------------------------------------------
         // Paths / assets
@@ -512,6 +524,10 @@ namespace CustomBrowser
             // Unsubscribe from the shared static DatabaseService so this closed window can be garbage collected.
             _dbService.OnHistoryChanged -= _historyChangedHandler;
             _dbService.OnBookmarksChanged -= _bookmarksChangedHandler;
+            if (_searchEngineChangedHandler != null) BrowserSettings.SearchEngineChanged -= _searchEngineChangedHandler;
+            ShutdownWallpaperSync();
+            ShutdownDownloadFeedback();
+            RememberOpenTabsAsClosed(); // tabs still open when the window closes can be reopened with Ctrl+Shift+T
             foreach (var tab in Tabs.ToList())
             {
                 _tabOwners.Remove(tab);
@@ -883,11 +899,9 @@ namespace CustomBrowser
         {
             try
             {
-                string savedPath = Path.Combine(GetUserDataFolder(), "wallpaper.jpg");
-                if (File.Exists(savedPath))
-                {
-                    ApplyWallpaper(LoadBitmap(savedPath));
-                }
+                string? savedPath = FindSavedWallpaper();
+                if (savedPath != null) ApplyWallpaper(LoadBitmap(savedPath));
+                else ResetWallpaperVisuals(); // another window went back to the default background
             }
             catch (Exception wallpaperEx)
             {
@@ -1080,27 +1094,6 @@ namespace CustomBrowser
             brush.Freeze();
             Resources["ChromeTintBrush"] = brush;
         }
-        private void BtnWallpaper_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new OpenFileDialog
-            {
-                Title = "Select Custom Browser Wallpaper",
-                Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp"
-            };
-            if (dialog.ShowDialog() != true) return;
-            try
-            {
-                // Decode FIRST: if the image is invalid we don't overwrite the previously saved wallpaper.
-                BitmapImage bitmap = LoadBitmap(dialog.FileName);
-                string destPath = Path.Combine(GetUserDataFolder(), "wallpaper.jpg");
-                File.Copy(dialog.FileName, destPath, overwrite: true);
-                ApplyWallpaper(bitmap);
-            }
-            catch (Exception ex)
-            {
-                ThemedDialog.Show($"Could not set wallpaper: {ex.Message}", "Wallpaper Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
         // ------------------------------------------------------------------
         // WebView2 environment / extensions
         // ------------------------------------------------------------------
@@ -1227,7 +1220,7 @@ namespace CustomBrowser
             if (ctrl && !alt && !shift && key == Key.D) return () => ToggleBookmarkCurrentPage();
             if (ctrl && !alt && !shift && key == Key.H) return () => ToggleSidebar("History");
             if (ctrl && !alt && !shift && key == Key.J) return () => OpenDownloadsTab();
-            if (ctrl && !alt && shift && key == Key.Delete) return () => OpenLibraryTab("history"); // "Clear browsing data" like other browsers
+            if (ctrl && !alt && shift && key == Key.Delete) return () => ShowClearBrowsingDataDialog(); // "Clear browsing data" like other browsers
             if (ctrl && !alt && !shift && key == Key.B) return () => ToggleSidebar("Bookmarks");
             if ((ctrl && !alt && !shift && key == Key.L) || (alt && !ctrl && key == Key.D) || key == Key.F6)
                 return () => TxtAddressBar.Focus();
@@ -1270,8 +1263,8 @@ namespace CustomBrowser
         }
         private void ReopenLastClosedTab()
         {
-            if (_closedTabUrls.Count == 0) return;
-            string url = _closedTabUrls.Pop();
+            string? url = ClosedTabStore.Pop();
+            if (url == null) return;
             _ = OpenTabSafeAsync(url);
         }
         private void TabStripHost_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateTabWidth();
@@ -1416,16 +1409,7 @@ namespace CustomBrowser
             string? closedUrl = tab.Url;
             if (!scriptClose && !string.IsNullOrEmpty(closedUrl) && !IsBuiltInPage(closedUrl))
             {
-                _closedTabUrls.Push(closedUrl);
-                while (_closedTabUrls.Count > MaxClosedTabHistory)
-                {
-                    // Stack has no TryPop on older runtimes; use the bottom-trim approach.
-                    var tmp = _closedTabUrls.ToArray(); // newest first
-                    _closedTabUrls.Clear();
-                    for (int i = MaxClosedTabHistory - 1; i >= 0; i--)
-                        _closedTabUrls.Push(tmp[i]);
-                    break;
-                }
+                ClosedTabStore.Push(closedUrl);
             }
             // The user may have switched tabs during the 90 ms close animation.
             wasSelected |= ReferenceEquals(_selectedTab, tab);
@@ -1466,4 +1450,8 @@ namespace CustomBrowser
         }
     }
 }
+
+
+
+
 

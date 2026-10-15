@@ -129,6 +129,19 @@ namespace CustomBrowser
         }
         private DatabaseService.HistorySortMode _currentHistorySortMode = DatabaseService.HistorySortMode.Date;
         private string _currentSidebarView = "History";
+        private void SetHistorySortMode(DatabaseService.HistorySortMode mode)
+        {
+            _currentHistorySortMode = mode;
+            BrowserSettings.SetHistorySort(mode.ToString()); // new windows (and the next start) keep the choice
+        }
+
+        /// <summary>Starts this window with the sort order and sidebar width the user last chose.</summary>
+        private void ApplyPersistedSidebarState()
+        {
+            if (Enum.TryParse(BrowserSettings.HistorySort, out DatabaseService.HistorySortMode mode)) _currentHistorySortMode = mode;
+            _sidebarWidth = Math.Clamp(BrowserSettings.SidebarWidth, 240, 600);
+            UpdateSortCheckmarks();
+        }
         private void BtnHistory_Click(object sender, RoutedEventArgs e)
         {
             ToggleSidebar("History");
@@ -168,7 +181,11 @@ namespace CustomBrowser
 
         private void HideSidebarPanel()
         {
-            if (SidebarColumn.ActualWidth > 0) _sidebarWidth = SidebarColumn.ActualWidth;
+            if (SidebarColumn.ActualWidth > 0)
+            {
+                _sidebarWidth = SidebarColumn.ActualWidth;
+                BrowserSettings.SetSidebarWidth(_sidebarWidth);
+            }
             SidebarPanel.Visibility = Visibility.Collapsed;
             SidebarResizer.Visibility = Visibility.Collapsed;
             SidebarColumn.Width = new GridLength(0);
@@ -316,28 +333,28 @@ namespace CustomBrowser
         }
         private void BtnSortByDate_Click(object sender, RoutedEventArgs e)
         {
-            _currentHistorySortMode = DatabaseService.HistorySortMode.Date;
+            SetHistorySortMode(DatabaseService.HistorySortMode.Date);
             UpdateSortCheckmarks();
             SidebarSortPopup.IsOpen = false;
             RefreshSidebarHistory(TxtSidebarSearch.Text.Trim());
         }
         private void BtnSortBySite_Click(object sender, RoutedEventArgs e)
         {
-            _currentHistorySortMode = DatabaseService.HistorySortMode.Site;
+            SetHistorySortMode(DatabaseService.HistorySortMode.Site);
             UpdateSortCheckmarks();
             SidebarSortPopup.IsOpen = false;
             RefreshSidebarHistory(TxtSidebarSearch.Text.Trim());
         }
         private void BtnSortByLastVisited_Click(object sender, RoutedEventArgs e)
         {
-            _currentHistorySortMode = DatabaseService.HistorySortMode.LastVisited;
+            SetHistorySortMode(DatabaseService.HistorySortMode.LastVisited);
             UpdateSortCheckmarks();
             SidebarSortPopup.IsOpen = false;
             RefreshSidebarHistory(TxtSidebarSearch.Text.Trim());
         }
         private void BtnSortByMostVisited_Click(object sender, RoutedEventArgs e)
         {
-            _currentHistorySortMode = DatabaseService.HistorySortMode.MostVisited;
+            SetHistorySortMode(DatabaseService.HistorySortMode.MostVisited);
             UpdateSortCheckmarks();
             SidebarSortPopup.IsOpen = false;
             RefreshSidebarHistory(TxtSidebarSearch.Text.Trim());
@@ -402,6 +419,7 @@ namespace CustomBrowser
         {
             SearchEnginePopup.IsOpen = false;
             _activeSearchEngine = engine;
+            BrowserSettings.SetSearchEngine(engine?.Name); // remembered across restarts and applied in every window
             UpdateActiveEngineVisuals();
             string text = TxtAddressBar.Text.Trim();
             if (!string.IsNullOrWhiteSpace(text) && engine != null)
@@ -418,12 +436,22 @@ namespace CustomBrowser
         private void BtnClearActiveEngine_Click(object sender, RoutedEventArgs e)
         {
             _activeSearchEngine = null;
+            BrowserSettings.SetSearchEngine(null);
             UpdateActiveEngineVisuals();
             TxtAddressBar.Focus();
             if (!string.IsNullOrWhiteSpace(TxtAddressBar.Text))
             {
                 _ = RefreshAddressSuggestionsAsync(TxtAddressBar.Text.Trim());
             }
+        }
+        /// <summary>Applies the engine saved in the shared settings (startup, and when another window changes it).</summary>
+        private void ApplyPersistedSearchEngine()
+        {
+            string name = BrowserSettings.SearchEngineName;
+            _activeSearchEngine = string.IsNullOrEmpty(name)
+                ? null
+                : AllSearchEngines.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.Ordinal));
+            UpdateActiveEngineVisuals();
         }
         private void UpdateActiveEngineVisuals()
         {
@@ -457,5 +485,9 @@ namespace CustomBrowser
         private void BtnEngineWikipedia_Click(object sender, RoutedEventArgs e) => SelectSearchEngine(EngineWikipedia);
     }
 }
+
+
+
+
 
 

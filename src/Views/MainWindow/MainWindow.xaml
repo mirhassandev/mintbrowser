@@ -364,6 +364,7 @@
         <!-- Firefox Developer Edition-style tab: translucent glass pill; the SELECTED tab is a dark glass capsule with a subtle outline.
              Inactive tabs are transparent, showing a frosted hover capsule on mouse-over. -->
         <Style x:Key="FirefoxTabItemStyle" TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.Name" Value="{Binding Title}"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Padding" Value="0"/>
@@ -420,7 +421,7 @@
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"/>
 
-                                    <Button x:Name="CloseBtn" Grid.Column="2"
+                                    <Button x:Name="CloseBtn" AutomationProperties.Name="Close tab" Grid.Column="2"
                                             Visibility="Collapsed"
                                             Click="BtnCloseTab_Click"
                                             Style="{StaticResource TabCloseButtonStyle}"
@@ -748,7 +749,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <ListBox x:Name="TabListBox"
+                    <ListBox x:Name="TabListBox" AutomationProperties.Name="Tabs"
                              Grid.Column="0"
                              Background="Transparent"
                              BorderThickness="0"
@@ -774,7 +775,7 @@
                     </ListBox>
 
                     <!-- Round New Tab (+) Button -->
-                    <Button x:Name="BtnNewTab"
+                    <Button x:Name="BtnNewTab" AutomationProperties.Name="New tab"
                              Grid.Column="1"
                              Click="BtnNewTab_Click"
                              Style="{StaticResource NewTabButtonStyle}"
@@ -788,7 +789,7 @@
                     </Button>
 
                     <!-- List all tabs (always reachable, even when the strip is full and scrolling) -->
-                    <Button x:Name="BtnAllTabs"
+                    <Button x:Name="BtnAllTabs" AutomationProperties.Name="List all tabs"
                              Grid.Column="3"
                              Click="BtnAllTabs_Click"
                              Style="{StaticResource NewTabButtonStyle}"
@@ -805,9 +806,9 @@
 
                 <!-- Window Caption Controls -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                    <Button x:Name="BtnMinimize" Click="BtnMinimize_Click" Content="&#xE921;" Style="{StaticResource WindowCaptionButton}" ToolTip="Minimize"/>
-                    <Button x:Name="BtnMaximize" Click="BtnMaximize_Click" Content="&#xE922;" Style="{StaticResource WindowCaptionButton}" ToolTip="Maximize"/>
-                    <Button x:Name="BtnClose" Click="BtnClose_Click" Content="&#xE8BB;" Style="{StaticResource CloseWindowCaptionButton}" ToolTip="Close"/>
+                    <Button x:Name="BtnMinimize" AutomationProperties.Name="Minimize" Click="BtnMinimize_Click" Content="&#xE921;" Style="{StaticResource WindowCaptionButton}" ToolTip="Minimize"/>
+                    <Button x:Name="BtnMaximize" AutomationProperties.Name="Maximize" Click="BtnMaximize_Click" Content="&#xE922;" Style="{StaticResource WindowCaptionButton}" ToolTip="Maximize"/>
+                    <Button x:Name="BtnClose" AutomationProperties.Name="Close window" Click="BtnClose_Click" Content="&#xE8BB;" Style="{StaticResource CloseWindowCaptionButton}" ToolTip="Close"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -824,15 +825,15 @@
                 <!-- Navigation buttons -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
                     <!-- Back -->
-                    <Button x:Name="BtnBack" Click="BtnBack_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Go back one page (Alt+Left Arrow)" IsEnabled="False">
+                    <Button x:Name="BtnBack" AutomationProperties.Name="Back" Click="BtnBack_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Go back one page (Alt+Left Arrow)" IsEnabled="False">
                         <Path Data="M 11,4 L 3,12 L 11,20 M 3,12 L 21,12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
                     <!-- Forward -->
-                    <Button x:Name="BtnForward" Click="BtnForward_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Go forward one page (Alt+Right Arrow)" IsEnabled="False">
+                    <Button x:Name="BtnForward" AutomationProperties.Name="Forward" Click="BtnForward_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Go forward one page (Alt+Right Arrow)" IsEnabled="False">
                         <Path Data="M 13,4 L 21,12 L 13,20 M 21,12 L 3,12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
                     <!-- Reload / Stop -->
-                    <Button x:Name="BtnReload" Click="BtnReload_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Reload current page (Ctrl+R)">
+                    <Button x:Name="BtnReload" AutomationProperties.Name="Reload" Click="BtnReload_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Reload current page (Ctrl+R)">
                         <!-- Reload / Stop icon. Drawn on a fixed 24x24 canvas inside a Viewbox so it is always centred and
                              never distorted by the path's own bounding box. PathReloadIcon.Data is swapped between reload and stop from code-behind. -->
                         <Viewbox Width="16" Height="16" Stretch="Uniform">
@@ -863,7 +864,7 @@
                             <!-- Left Slot: Engine Selector or Active Pill -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,2,0">
                                 <!-- Default Search Engine Selector Pill -->
-                                <Button x:Name="BtnSearchEngineSelector" Click="BtnSearchEngineSelector_Click"
+                                <Button x:Name="BtnSearchEngineSelector" AutomationProperties.Name="Choose search engine" Click="BtnSearchEngineSelector_Click"
                                         Style="{StaticResource SearchSelectorButtonStyle}"
                                         VerticalAlignment="Center" ToolTip="Search engine &amp; shortcuts">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0">
@@ -880,7 +881,7 @@
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <Image x:Name="ImgActiveEngine" Width="14" Height="14" RenderOptions.BitmapScalingMode="HighQuality" Margin="0,0,5,0"/>
                                         <TextBlock x:Name="TxtActiveEngineName" Text="Bing" Foreground="{StaticResource MintTextBrush}" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                        <Button x:Name="BtnClearActiveEngine" Click="BtnClearActiveEngine_Click"
+                                        <Button x:Name="BtnClearActiveEngine" AutomationProperties.Name="Clear search engine" Click="BtnClearActiveEngine_Click"
                                                 Background="Transparent" BorderThickness="0" Width="14" Height="14"
                                                 Cursor="Hand" ToolTip="Clear search engine" VerticalAlignment="Center"
                                                 FocusVisualStyle="{x:Null}">
@@ -894,7 +895,7 @@
                             </StackPanel>
 
                             <!-- Center Slot: Address/Search input -->
-                            <TextBox x:Name="TxtAddressBar"
+                            <TextBox x:Name="TxtAddressBar" AutomationProperties.Name="Address bar"
                                      Grid.Column="1"
                                      Tag="Search with Google or enter address"
                                      TextChanged="TxtAddressBar_TextChanged"
@@ -911,15 +912,22 @@
 
                             <!-- Right Slot: Action Buttons -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0">
+                                <!-- Pop-up blocked (only visible while the page tried to open something on its own) -->
+                                <Button x:Name="BtnPopupBlocked" AutomationProperties.Name="Pop-up blocked" Click="BtnPopupBlocked_Click" Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28"
+                                        Visibility="Collapsed" ToolTip="A pop-up was blocked on this page">
+                                    <Path Data="M 4,5 L 20,5 L 20,19 L 4,19 Z M 4,9 L 20,9 M 13.5,12 L 17.5,16 M 17.5,12 L 13.5,16"
+                                          Stroke="{StaticResource MintWarningBrush}" StrokeThickness="1.6" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          Width="14" Height="14" Stretch="Uniform"/>
+                                </Button>
                                 <!-- Bookmark / Star -->
-                                <Button x:Name="BtnBookmark" Click="BtnBookmark_Click" Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28" ToolTip="Bookmark this tab (Ctrl+D)">
+                                <Button x:Name="BtnBookmark" AutomationProperties.Name="Bookmark this page" Click="BtnBookmark_Click" Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28" ToolTip="Bookmark this tab (Ctrl+D)">
                                     <Path x:Name="PathBookmarkStar"
                                           Data="M 12,2 L 15.09,8.26 L 22,9.27 L 17,14.14 L 18.18,21.02 L 12,17.77 L 5.82,21.02 L 7,14.14 L 2,9.27 L 8.91,8.26 Z"
                                           Stroke="{StaticResource MintTextSoftBrush}" Fill="Transparent" StrokeThickness="1.5" StrokeLineJoin="Round"
                                           Width="14" Height="14" Stretch="Uniform"/>
                                 </Button>
                                 <!-- Go / Enter arrow -->
-                                <Button x:Name="BtnGo" Click="BtnGo_Click" Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28" ToolTip="Go / Search">
+                                <Button x:Name="BtnGo" AutomationProperties.Name="Go" Click="BtnGo_Click" Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28" ToolTip="Go / Search">
                                     <Path Data="M 5,12 L 19,12 M 13,6 L 19,12 L 13,18"
                                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                           StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
@@ -933,7 +941,7 @@
                 <!-- Right toolbar: secondary actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
                     <!-- History / Sidebar toggle -->
-                    <Button x:Name="BtnHistory" Click="BtnHistory_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Sidebar / History (Ctrl+H)">
+                    <Button x:Name="BtnHistory" AutomationProperties.Name="Sidebar" Click="BtnHistory_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Sidebar / History (Ctrl+H)">
                         <!-- History icon: clock face with a counter-clockwise arrow (24x24 canvas in a Viewbox,
                              same technique as the reload icon so size and stroke match the other toolbar icons). -->
                         <Viewbox Width="16" Height="16" Stretch="Uniform">
@@ -946,28 +954,28 @@
                         </Viewbox>
                     </Button>
                     <!-- Wallpaper / Theme -->
-                    <Button x:Name="BtnWallpaper" Click="BtnWallpaper_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Customize Wallpaper">
+                    <Button x:Name="BtnWallpaper" AutomationProperties.Name="Wallpaper" Click="BtnWallpaper_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Customize Wallpaper">
                         <Path Data="M 3,3 L 21,3 L 21,21 L 3,21 Z M 3,15 L 7,11 L 11,15 L 15,9 L 21,15"
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                               Fill="Transparent" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
                     <!-- Extensions manager (mint://extensions) -->
-                    <Button x:Name="BtnUBlock" Click="BtnUBlock_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Extensions">
+                    <Button x:Name="BtnUBlock" AutomationProperties.Name="Extensions" Click="BtnUBlock_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Extensions">
                         <Path Data="M 19.439 7.85 c -0.049 0.322 0.059 0.648 0.289 0.878 l 1.568 1.568 c 0.47 0.47 0.706 1.087 0.706 1.704 s -0.235 1.233 -0.706 1.704 l -1.611 1.611 a 0.98 0.98 0 0 1 -0.837 0.276 c -0.47 -0.07 -0.802 -0.48 -0.968 -0.925 a 2.501 2.501 0 1 0 -3.214 3.214 c 0.446 0.166 0.855 0.497 0.925 0.968 a 0.979 0.979 0 0 1 -0.276 0.837 l -1.61 1.61 a 2.404 2.404 0 0 1 -1.705 0.707 a 2.402 2.402 0 0 1 -1.704 -0.706 l -1.568 -1.568 a 1.026 1.026 0 0 0 -0.877 -0.29 c -0.493 0.074 -0.84 0.504 -1.02 0.968 a 2.5 2.5 0 1 1 -3.237 -3.237 c 0.464 -0.18 0.894 -0.527 0.967 -1.02 a 1.026 1.026 0 0 0 -0.289 -0.877 l -1.568 -1.568 A 2.402 2.402 0 0 1 1.998 12 c 0 -0.617 0.236 -1.234 0.706 -1.704 L 4.23 8.77 c 0.24 -0.24 0.581 -0.353 0.917 -0.303 c 0.515 0.077 0.877 0.528 1.073 1.01 a 2.5 2.5 0 1 0 3.259 -3.259 c -0.482 -0.196 -0.933 -0.558 -1.01 -1.073 c -0.05 -0.336 0.062 -0.676 0.303 -0.917 l 1.525 -1.525 A 2.402 2.402 0 0 1 12 1.998 c 0.617 0 1.234 0.236 1.704 0.706 l 1.568 1.568 c 0.23 0.23 0.556 0.338 0.877 0.29 c 0.493 -0.074 0.84 -0.504 1.02 -0.968 a 2.5 2.5 0 1 1 3.237 3.237 c -0.464 0.18 -0.894 0.527 -0.967 1.02 Z"
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                               Fill="Transparent" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
                     <!-- Site video download (yt-dlp): YouTube, Facebook, Instagram, X, TikTok, Vimeo ... -->
-                    <Button x:Name="BtnYtdl" Click="BtnYtdl_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Download video / audio from this site" Visibility="Collapsed">
+                    <Button x:Name="BtnYtdl" AutomationProperties.Name="Download video or audio from this site" Click="BtnYtdl_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Download video / audio from this site" Visibility="Collapsed">
                         <Path Data="M 12,3 A 9,9 0 1 0 12,21 A 9,9 0 1 0 12,3 M 12,8 L 12,15 M 8.5,12 L 12,15.5 L 15.5,12"
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                               Fill="Transparent" Width="14" Height="14" Stretch="Uniform"/>
                     </Button>
                     <!-- Page media (IDM style): visible while the page loads video / audio -->
-                    <Button x:Name="BtnStreams" Click="BtnStreams_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Download video / audio from this page" Visibility="Collapsed">
+                    <Button x:Name="BtnStreams" AutomationProperties.Name="Download video or audio from this page" Click="BtnStreams_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Download video / audio from this page" Visibility="Collapsed">
                         <Grid>
                             <Path Data="M 4,4 L 20,4 L 20,14 L 4,14 Z M 10,6.5 L 14,9 L 10,11.5 Z M 12,16.5 L 12,21 M 9.5,18.5 L 12,21 L 14.5,18.5"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -979,7 +987,7 @@
                         </Grid>
                     </Button>
                     <!-- Downloads -->
-                    <Button x:Name="BtnDownloadsManager" Click="BtnDownloadsManager_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Downloads">
+                    <Button x:Name="BtnDownloadsManager" AutomationProperties.Name="Downloads" Click="BtnDownloadsManager_Click" Style="{StaticResource ModernNavBtnStyle}" ToolTip="Downloads">
                         <Path Data="M 12,3 L 12,15 M 8,11 L 12,15 L 16,11 M 4,20 L 20,20"
                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                               StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
@@ -1060,13 +1068,13 @@
                             </Border>
                         </Popup>
 
-                        <Button x:Name="BtnSidebarOpenFullPage" Click="BtnSidebarOpenFullPage_Click" Style="{StaticResource ModernNavBtnStyle}" HorizontalAlignment="Right" Width="26" Height="26" Margin="0,0,30,0" ToolTip="Open as a full page (manage, select and delete in bulk)">
+                        <Button x:Name="BtnSidebarOpenFullPage" AutomationProperties.Name="Open as a full page" Click="BtnSidebarOpenFullPage_Click" Style="{StaticResource ModernNavBtnStyle}" HorizontalAlignment="Right" Width="26" Height="26" Margin="0,0,30,0" ToolTip="Open as a full page (manage, select and delete in bulk)">
                             <Path Data="M 14,4 L 20,4 L 20,10 M 20,4 L 11,13 M 18,14 L 18,19 A 1,1 0 0 1 17,20 L 5,20 A 1,1 0 0 1 4,19 L 4,7 A 1,1 0 0 1 5,6 L 10,6"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                                   Fill="Transparent" Width="12" Height="12" Stretch="Uniform"/>
                         </Button>
-                        <Button x:Name="BtnCloseSidebar" Click="BtnCloseSidebar_Click" Style="{StaticResource ModernNavBtnStyle}" HorizontalAlignment="Right" Width="26" Height="26" ToolTip="Close sidebar">
+                        <Button x:Name="BtnCloseSidebar" AutomationProperties.Name="Close sidebar" Click="BtnCloseSidebar_Click" Style="{StaticResource ModernNavBtnStyle}" HorizontalAlignment="Right" Width="26" Height="26" ToolTip="Close sidebar">
                             <Path Data="M 6,6 L 18,18 M 18,6 L 6,18"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
@@ -1096,7 +1104,7 @@
                                       VerticalAlignment="Center" Margin="0,0,6,0"/>
                                 <Grid Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock x:Name="TxtSidebarSearchWatermark" Text="Search history" Foreground="{StaticResource MintTextMutedBrush}" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False"/>
-                                    <TextBox x:Name="TxtSidebarSearch" Background="Transparent" Foreground="{StaticResource MintTextBrush}" BorderThickness="0"
+                                    <TextBox x:Name="TxtSidebarSearch" AutomationProperties.Name="Search the sidebar" Background="Transparent" Foreground="{StaticResource MintTextBrush}" BorderThickness="0"
                                              VerticalAlignment="Center" FontSize="12" TextChanged="TxtSidebarSearch_TextChanged" VerticalContentAlignment="Center"
                                              CaretBrush="{StaticResource MintAccentBrush}"/>
                                 </Grid>
@@ -1104,7 +1112,7 @@
                         </Border>
 
                         <!-- ⋯ More Options Button -->
-                        <Button x:Name="BtnSidebarMoreOptions" Grid.Column="1" Click="BtnSidebarMoreOptions_Click"
+                        <Button x:Name="BtnSidebarMoreOptions" AutomationProperties.Name="View options" Grid.Column="1" Click="BtnSidebarMoreOptions_Click"
                                 Style="{StaticResource ModernNavBtnStyle}" Width="28" Height="28" Margin="6,0,0,0" ToolTip="View options">
                             <!-- 3 dot ellipsis icon -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -1226,7 +1234,7 @@
                                                             </Grid.ColumnDefinitions>
                                                             <Image Source="{Binding FaviconUrl}" Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="HighQuality"/>
                                                             <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{StaticResource MintTextBrush}" FontSize="12" Margin="6,0,4,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                            <Button x:Name="BtnDeleteHistoryRow" Grid.Column="2" Click="BtnDeleteHistoryRow_Click" Tag="{Binding Url}" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SidebarDeleteButtonStyle}" Width="22" Height="22" ToolTip="Delete from history"/>
+                                                            <Button x:Name="BtnDeleteHistoryRow" AutomationProperties.Name="Delete from history" Grid.Column="2" Click="BtnDeleteHistoryRow_Click" Tag="{Binding Url}" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SidebarDeleteButtonStyle}" Width="22" Height="22" ToolTip="Delete from history"/>
                                                         </Grid>
                                                     </Border>
                                                     <DataTemplate.Triggers>
@@ -1295,7 +1303,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Image Source="{Binding FaviconUrl}" Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="HighQuality"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{StaticResource MintTextBrush}" FontSize="12" Margin="6,0,4,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                            <Button x:Name="BtnDeleteBmkRow" Grid.Column="2" Click="BtnDeleteBookmarkRow_Click" Tag="{Binding Url}" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SidebarDeleteButtonStyle}" Width="22" Height="22" ToolTip="Remove bookmark"/>
+                                            <Button x:Name="BtnDeleteBmkRow" AutomationProperties.Name="Remove bookmark" Grid.Column="2" Click="BtnDeleteBookmarkRow_Click" Tag="{Binding Url}" Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SidebarDeleteButtonStyle}" Width="22" Height="22" ToolTip="Remove bookmark"/>
                                         </Grid>
                                     </Border>
                                     <DataTemplate.Triggers>
@@ -1339,6 +1347,40 @@
                 Opacity="0"
                 IsHitTestVisible="False"/>
 
+        <!-- Pop-up blocked: what the page tried to open -->
+        <Popup x:Name="PopupBlockedPopup" PlacementTarget="{Binding ElementName=BtnPopupBlocked}" Placement="Bottom" StaysOpen="False"
+               AllowsTransparency="True" VerticalOffset="6">
+            <Border Background="{StaticResource MintSurfaceRaisedBrush}" BorderBrush="{StaticResource MintBorderBrush}" BorderThickness="1"
+                    CornerRadius="{StaticResource MintRadiusM}" Padding="8" Width="320">
+                <StackPanel>
+                    <TextBlock Text="Pop-up blocked" Foreground="{StaticResource MintTextBrush}" FontSize="13" FontWeight="SemiBold" Margin="6,2,6,2"/>
+                    <TextBlock Text="This page tried to open a new tab on its own. Open one only if you expect it."
+                               Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap" Margin="6,0,6,8"/>
+                    <ItemsControl x:Name="PopupBlockedList"/>
+                    <Border Height="1" Background="{StaticResource MintBorderBrush}" Margin="4,6"/>
+                    <Button x:Name="BtnPopupBlockedDismiss" Click="BtnPopupBlockedDismiss_Click" Style="{StaticResource SidebarMenuItemStyle}">
+                        <TextBlock Text="Dismiss" Foreground="{StaticResource MintTextSoftBrush}" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <!-- Wallpaper menu (shown once a custom wallpaper is set) -->
+        <Popup x:Name="WallpaperMenuPopup" PlacementTarget="{Binding ElementName=BtnWallpaper}" Placement="Bottom" StaysOpen="False"
+               AllowsTransparency="True" VerticalOffset="6">
+            <Border Background="{StaticResource MintSurfaceRaisedBrush}" BorderBrush="{StaticResource MintBorderBrush}" BorderThickness="1"
+                    CornerRadius="{StaticResource MintRadiusM}" Padding="6" Width="210">
+                <StackPanel>
+                    <Button x:Name="BtnWallpaperChoose" Click="BtnWallpaperChoose_Click" Style="{StaticResource SidebarMenuItemStyle}">
+                        <TextBlock Text="Choose another image&#x2026;" Foreground="{StaticResource MintTextBrush}" FontSize="12"/>
+                    </Button>
+                    <Button x:Name="BtnWallpaperReset" Click="BtnWallpaperReset_Click" Style="{StaticResource SidebarMenuItemStyle}">
+                        <TextBlock Text="Use the default background" Foreground="{StaticResource MintTextBrush}" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
         <!-- Rich address bar suggestions -->
         <Popup x:Name="AddressSuggestionsPopup"
                AllowsTransparency="True"
@@ -1354,7 +1396,7 @@
                     MaxHeight="420"
                     Padding="5"
                     Style="{StaticResource SuggestionPopupBorder}">
-                <ListBox x:Name="AddressSuggestionsList"
+                <ListBox x:Name="AddressSuggestionsList" AutomationProperties.Name="Address suggestions"
                           ItemsSource="{Binding AddressSuggestions}"
                           ItemContainerStyle="{StaticResource SuggestionItemStyle}"
                           Background="Transparent"
@@ -1379,7 +1421,7 @@
             <Border Width="300" Padding="6" CornerRadius="{StaticResource MintRadiusL}"
                     Background="{StaticResource MintSurfaceBrush}" BorderBrush="{StaticResource MintBorderStrongBrush}" BorderThickness="1"
                     SnapsToDevicePixels="False">
-                <ListBox x:Name="AllTabsList"
+                <ListBox x:Name="AllTabsList" AutomationProperties.Name="All tabs"
                          ItemsSource="{Binding Tabs}"
                          ItemContainerStyle="{StaticResource AllTabsItemStyle}"
                          Background="Transparent"
@@ -1406,15 +1448,15 @@
                     <TextBlock Text="Edit Bookmark" Foreground="{StaticResource MintTextBrush}" FontWeight="SemiBold" FontSize="13.5" Margin="0,0,0,10"/>
 
                     <TextBlock Text="Name" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                    <TextBox x:Name="TxtBookmarkTitle" Height="30" Background="{StaticResource MintSurfaceInputBrush}" Foreground="{StaticResource MintTextBrush}" BorderBrush="{StaticResource MintBorderStrongBrush}"
+                    <TextBox x:Name="TxtBookmarkTitle" AutomationProperties.Name="Bookmark name" Height="30" Background="{StaticResource MintSurfaceInputBrush}" Foreground="{StaticResource MintTextBrush}" BorderBrush="{StaticResource MintBorderStrongBrush}"
                              BorderThickness="1" Padding="8,4" FontSize="12" Margin="0,0,0,8" VerticalContentAlignment="Center"
                              CaretBrush="{StaticResource MintAccentBrush}"/>
 
                     <TextBlock Text="Location" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                    <TextBox x:Name="TxtBookmarkUrl" Height="30" Background="{StaticResource MintSurfaceBrush}" Foreground="{StaticResource MintTextMutedBrush}" BorderBrush="{StaticResource MintBorderBrush}"
+                    <TextBox x:Name="TxtBookmarkUrl" AutomationProperties.Name="Bookmark address" Height="30" Background="{StaticResource MintSurfaceBrush}" Foreground="{StaticResource MintTextMutedBrush}" BorderBrush="{StaticResource MintBorderBrush}"
                              BorderThickness="1" Padding="8,4" FontSize="11" Margin="0,0,0,14" IsReadOnly="True" VerticalContentAlignment="Center"/>
                     <!-- TxtBookmarkFolder kept in tree for code-behind compatibility but hidden -->
-                    <TextBox x:Name="TxtBookmarkFolder" Visibility="Collapsed" Text="Bookmarks Toolbar"/>
+                    <TextBox x:Name="TxtBookmarkFolder" AutomationProperties.Name="Bookmark folder" Visibility="Collapsed" Text="Bookmarks Toolbar"/>
 
                     <Grid>
                         <Button x:Name="BtnRemoveBookmark" Click="BtnRemoveBookmark_Click" Content="Remove"
@@ -1442,7 +1484,7 @@
                     <!-- Header -->
                     <Grid Margin="16,12,10,4">
                         <TextBlock Text="Recent download history" Foreground="{StaticResource MintTextBrush}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <Button x:Name="BtnCloseDownloadsPopup" Click="BtnCloseDownloadsPopup_Click"
+                        <Button x:Name="BtnCloseDownloadsPopup" AutomationProperties.Name="Close downloads panel" Click="BtnCloseDownloadsPopup_Click"
                                 Style="{StaticResource ModernNavBtnStyle}" Width="26" Height="26"
                                 HorizontalAlignment="Right" ToolTip="Close">
                             <Path Data="M 6,6 L 18,18 M 18,6 L 6,18"
@@ -1543,7 +1585,7 @@
                                             </StackPanel>
 
                                             <!-- Show in folder (finished downloads only) -->
-                                            <Button Grid.Column="2" Click="DownloadShowInFolder_Click"
+                                            <Button Grid.Column="2" Click="DownloadShowInFolder_Click" AutomationProperties.Name="Show in folder"
                                                     Width="28" Height="28" VerticalAlignment="Center" ToolTip="Show in folder">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource ModernNavBtnStyle}">
@@ -1675,5 +1717,7 @@
         </Popup>
     </Grid>
 </Window>
+
+
 
 

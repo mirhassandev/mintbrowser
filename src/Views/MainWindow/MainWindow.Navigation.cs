@@ -50,6 +50,7 @@ namespace CustomBrowser
             }
             BtnReload.ToolTip = isLoading ? "Stop loading this page (Esc)" : "Reload current page (Ctrl+R)";
             SetTopProgressVisible(isLoading);
+            UpdatePopupBlockedIndicator(); // runs on every tab switch and page start, so the icon always belongs to the visible tab
         }
 
         // Loading bar: appears only if a load lasts longer than a short grace period, and fades in / out instead of popping.
@@ -192,14 +193,16 @@ namespace CustomBrowser
                 return;
             }
             bool popupOpen = AddressSuggestionsPopup.IsOpen && AddressSuggestions.Count > 0;
-            // Shift + Delete removes highlighted history suggestion (Firefox standard shortcut)
+            // Shift + Delete removes a highlighted HISTORY suggestion (Firefox standard shortcut).
+            // Bookmarks, open tabs and searches are never deleted from here: a bookmark must only go through the bookmark UI.
             if (e.Key == Key.Delete && (Keyboard.Modifiers & ModifierKeys.Shift) != 0 && popupOpen)
             {
-                if (AddressSuggestionsList.SelectedItem is AddressSuggestion selectedSug && !string.IsNullOrEmpty(selectedSug.Url))
+                if (AddressSuggestionsList.SelectedItem is AddressSuggestion selectedSug &&
+                    !string.IsNullOrEmpty(selectedSug.Url) &&
+                    selectedSug.TrailingText == "History")
                 {
                     e.Handled = true;
                     _dbService.RemoveHistory(selectedSug.Url);
-                    _dbService.RemoveBookmark(selectedSug.Url);
                     int selIndex = AddressSuggestionsList.SelectedIndex;
                     AddressSuggestions.Remove(selectedSug);
                     if (AddressSuggestions.Count == 0)
@@ -402,12 +405,29 @@ namespace CustomBrowser
         {
             if (AddressSuggestionsPopup.IsOpen)
             {
-                AddressSuggestionsBorder.Width = Math.Max(440, AddressBarHost.ActualWidth);
+                AddressSuggestionsBorder.Width = SuggestionPopupWidth();
             }
+        }
+
+        /// <summary>As wide as the address bar (at least 440), but never wider than the room left to the window's right edge.</summary>
+        private double SuggestionPopupWidth()
+        {
+            double wanted = Math.Max(440, AddressBarHost.ActualWidth);
+            try
+            {
+                double left = AddressBarHost.TranslatePoint(new Point(0, 0), this).X;
+                double room = ActualWidth - left - 16;
+                if (room >= 240) wanted = Math.Min(wanted, room);
+            }
+            catch (InvalidOperationException)
+            {
+                // Not in the visual tree yet: the plain width is fine.
+            }
+            return wanted;
         }
         private void AddressSuggestionsPopup_Opened(object sender, EventArgs e)
         {
-            AddressSuggestionsBorder.Width = Math.Max(440, AddressBarHost.ActualWidth);
+            AddressSuggestionsBorder.Width = SuggestionPopupWidth();
             AddressSuggestionsBorder.Opacity = 0;
             AddressSuggestionsBorder.RenderTransformOrigin = new Point(0.5, 0);
             AddressSuggestionsBorder.RenderTransform = new ScaleTransform(0.985, 0.985);
@@ -456,13 +476,9 @@ namespace CustomBrowser
             }
             return true;
         }
+        /// <summary>True for the results page of one of the search engines in the selector (built from the engine list, so the two cannot drift apart).</summary>
         private static bool IsSearchUrl(string url) =>
-            url.StartsWith("https://www.google.com/search?q=", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://www.bing.com/search?q=", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://duckduckgo.com/?q=", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://developer.mozilla.org/", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://www.perplexity.ai/search?q=", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://en.wikipedia.org/", StringComparison.OrdinalIgnoreCase);
+            SearchUrls.Matches(url, AllSearchEngines.Select(engine => engine.SearchUrl));
         private async Task RefreshAddressSuggestionsAsync(string rawQuery)
         {
             _suggestionCts?.Cancel();
@@ -621,7 +637,7 @@ namespace CustomBrowser
             {
                 AppLog.Warn("History suggestions failed", ex);
             }
-            foreach (string recent in _recentQueries.AsEnumerable().Reverse())
+            foreach (string recent in BrowserSettings.GetRecentSearches().AsEnumerable().Reverse()) // newest first
             {
                 if (string.IsNullOrWhiteSpace(recent) || !recent.Contains(query, StringComparison.OrdinalIgnoreCase)) continue;
                 if (!seen.Add(recent)) continue;
@@ -835,14 +851,10 @@ namespace CustomBrowser
             return title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                    url.Contains(query, StringComparison.OrdinalIgnoreCase);
         }
-        private void AddRecentQuery(string query)
+        private static void AddRecentQuery(string query)
         {
             if (string.IsNullOrWhiteSpace(query) || TryGetHostScheme(query, out _)) return;
-            string normalized = Regex.Replace(query, @"\s+", " ").Trim();
-            if (normalized.Length < 2) return;
-            _recentQueries.RemoveAll(x => x.Equals(normalized, StringComparison.OrdinalIgnoreCase));
-            _recentQueries.Add(normalized);
-            if (_recentQueries.Count > 30) _recentQueries.RemoveAt(0);
+            BrowserSettings.AddRecentSearch(query); // shared by all windows and kept across restarts
         }
         private void AddressSuggestionsList_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -962,19 +974,6 @@ namespace CustomBrowser
             }
         }
 
-        /// <summary>Accepts "github.com", "https://github.com/x" ... and returns a valid http(s) URL, or null.</summary>
-        private static string? NormalizeShortcutUrl(string? input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return null;
-            input = input.Trim();
-            if (!input.Contains("://")) input = "https://" + input;
-
-            if (!Uri.TryCreate(input, UriKind.Absolute, out Uri? uri)) return null;
-            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return null;
-            if (string.IsNullOrEmpty(uri.Host) || (!uri.Host.Contains('.') && uri.Host != "localhost")) return null;
-            return uri.AbsoluteUri;
-        }
-
         private static string DefaultShortcutTitle(string url)
         {
             string host = Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) ? uri.Host : url;
@@ -985,8 +984,7 @@ namespace CustomBrowser
         /// <summary>Returns an error message, or null on success.</summary>
         private static string? AddShortcut(string? title, string? url)
         {
-            string? normalized = NormalizeShortcutUrl(url);
-            if (normalized == null) return "Enter a valid web address.";
+            if (!ShortcutUrls.TryNormalize(url, out string normalized, out string urlError)) return urlError; // says what is wrong, not just "invalid"
 
             lock (ShortcutLock)
             {
@@ -1002,8 +1000,7 @@ namespace CustomBrowser
 
         private static string? UpdateShortcut(string? id, string? title, string? url)
         {
-            string? normalized = NormalizeShortcutUrl(url);
-            if (normalized == null) return "Enter a valid web address.";
+            if (!ShortcutUrls.TryNormalize(url, out string normalized, out string urlError)) return urlError;
 
             lock (ShortcutLock)
             {
@@ -1104,4 +1101,7 @@ namespace CustomBrowser
         private void BtnUBlock_Click(object sender, RoutedEventArgs e) => OpenExtensionsTab();
     }
 }
+
+
+
 

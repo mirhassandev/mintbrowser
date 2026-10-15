@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Wpf;
@@ -22,6 +24,20 @@ namespace CustomBrowser.Models
         public BrowserTab? Opener { get; set; }
         /// <summary>Set once a real document started loading here (a pure download navigation never does).</summary>
         public bool HasLoadedPage { get; set; }
+
+        private readonly List<string> _blockedPopups = new();
+        /// <summary>Addresses this page tried to open on its own (not after a click) and the browser blocked. Cleared when the tab navigates.</summary>
+        public IReadOnlyList<string> BlockedPopups => _blockedPopups;
+        /// <summary>Remembers a blocked pop-up (each address once, at most 8). Returns true when it was new.</summary>
+        public bool AddBlockedPopup(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url) || _blockedPopups.Contains(url, StringComparer.OrdinalIgnoreCase)) return false;
+            if (_blockedPopups.Count >= 8) _blockedPopups.RemoveAt(0);
+            _blockedPopups.Add(url);
+            return true;
+        }
+        public void RemoveBlockedPopup(string url) => _blockedPopups.RemoveAll(x => string.Equals(x, url, StringComparison.OrdinalIgnoreCase));
+        public void ClearBlockedPopups() => _blockedPopups.Clear();
 
         public bool IsLoading
         {
@@ -132,4 +148,6 @@ namespace CustomBrowser.Models
         }
     }
 }
+
+
 

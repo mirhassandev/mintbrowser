@@ -38,7 +38,9 @@ src/
       MainWindow.xaml(.cs)    window chrome, tab strip, address bar, popups
       MainWindow.Tabs.cs      tab lifecycle, WebView2 init, event wiring
       MainWindow.Navigation.cs address bar, suggestions, search engines, shortcuts
-      MainWindow.Sidebar.cs   history/bookmarks/passwords sidebar
+      MainWindow.Sidebar.cs   history/bookmarks/passwords sidebar, search engine selector
+      MainWindow.Session.cs   closing a window: confirmation, remembering open tabs
+      MainWindow.ClearData.cs Clear browsing data (Ctrl+Shift+Delete)
       MainWindow.Library.cs   host side of the full-page history/bookmarks/passwords manager
       MainWindow.Downloads.cs download interception, queue, dropdown
       MainWindow.DragDrop.cs  tab reorder, tear-off, cross-window transfer
@@ -89,6 +91,7 @@ artifacts/                    build output (git-ignored)
 | `Ctrl+H` | Toggle History sidebar |
 | `Ctrl+B` | Toggle Bookmarks sidebar |
 | `Ctrl+J` | Open Downloads tab |
+| `Ctrl+Shift+Delete` | Clear browsing data (history, cookies and site data, cache, passwords, autofill) |
 | `Ctrl+R` / `F5` | Reload page |
 | `Alt+Left` / `Alt+Right` | Back / Forward |
 | `Esc` | Stop loading / close address suggestions |
@@ -105,6 +108,8 @@ All user data lives under `%LocalAppData%\CustomBrowser`:
 | `MintPlaces.db` | Browsing history, bookmarks and the download list (LiteDB) |
 | `download-settings.json` | Download queue limit and speed cap |
 | `shortcuts.json` | New-tab page shortcut tiles |
+| `browser-settings.json` | Selected search engine and recent searches (shared by all windows) |
+| `closed-tabs.json` | Recently closed tabs for `Ctrl+Shift+T` |
 | `logs\app.log` | Application log |
 
 ## Tools
@@ -133,3 +138,5 @@ pwsh tools\New-CodeDump.ps1 -Format Xml
 - **Tests**: `dotnet test tests\CustomBrowser.Tests\CustomBrowser.Tests.csproj`. Pure logic (parsers, site matching, file-name rules) belongs in tests; UI code is checked by hand.
 - **Build output** is `artifacts\bin\CustomBrowser\<debug|release>\CustomBrowser.exe`.
 - **Commits**: one concern per commit, build and tests green before each.
+
+

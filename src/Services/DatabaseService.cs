@@ -81,6 +81,9 @@ namespace CustomBrowser.Services
             }
         }
 
+        /// <summary>A database that lives in memory only (nothing is written to disk). Used by the unit tests.</summary>
+        public static DatabaseService CreateInMemory() => new(new LiteDatabase(new MemoryStream()), persistent: false);
+
         private DatabaseService(LiteDatabase db, bool persistent)
         {
             _db = db;
@@ -124,6 +127,14 @@ namespace CustomBrowser.Services
                 {
                     stale.CookieHeader = string.Empty;
                     _downloads.Update(stale);
+                }
+
+                // Login cookies saved by older versions are readable text: protect them with the Windows account key.
+                foreach (DownloadEntry plain in _downloads.Find(x => x.CookieHeader != "").ToList())
+                {
+                    if (SecretProtector.IsProtected(plain.CookieHeader)) continue;
+                    plain.CookieHeader = SecretProtector.Protect(plain.CookieHeader);
+                    _downloads.Update(plain);
                 }
             }
             catch (Exception ex)
@@ -278,10 +289,8 @@ namespace CustomBrowser.Services
                         OnHistoryChanged?.Invoke();
                         }
                     }
-                    else
-                    {
-                        AddHistory(title, url);
-                    }
+                    // No entry yet: do nothing. A title change alone must not create history - the page may be an error page
+                    // that never finished loading. The entry is created when the navigation completes.
                 }
                 catch (Exception ex) { AppLog.Error("DatabaseService.UpdateTitle", ex); }
             }
@@ -806,7 +815,7 @@ namespace CustomBrowser.Services
                         existing.FileName = item.FileName;
                         existing.Url = item.Url;
                         existing.SavePath = item.SavePath;
-                        existing.CookieHeader = item.Status == DownloadStatus.Completed ? string.Empty : item.CookieHeader;
+                        existing.CookieHeader = item.Status == DownloadStatus.Completed ? string.Empty : SecretProtector.Protect(item.CookieHeader);
                         existing.Referer = item.Referer;
                         existing.UserAgent = item.UserAgent;
                         existing.Status = item.Status;
@@ -832,7 +841,7 @@ namespace CustomBrowser.Services
                             FileName = item.FileName,
                             Url = item.Url,
                             SavePath = item.SavePath,
-                            CookieHeader = item.Status == DownloadStatus.Completed ? string.Empty : item.CookieHeader,
+                            CookieHeader = item.Status == DownloadStatus.Completed ? string.Empty : SecretProtector.Protect(item.CookieHeader),
                             Referer = item.Referer,
                             UserAgent = item.UserAgent,
                             Type = item.Type,
@@ -931,4 +940,6 @@ namespace CustomBrowser.Services
         }
     }
 }
+
+
 

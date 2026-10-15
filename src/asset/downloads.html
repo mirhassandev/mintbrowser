@@ -512,7 +512,7 @@
       
       <div class="search-box">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="search" type="text" placeholder="Search downloads by name or URL..." autocomplete="off" />
+        <input id="search" type="text" aria-label="Search downloads" placeholder="Search downloads by name or URL..." autocomplete="off" />
       </div>
 
       <div class="header-actions">
@@ -524,13 +524,13 @@
     </div>
 
     <div class="add-bar">
-      <input id="txtAddUrl" type="text" placeholder="Paste a download link (https://...) and press Enter" autocomplete="off" spellcheck="false" />
+      <input id="txtAddUrl" type="text" aria-label="Download link" placeholder="Paste a download link (https://...) and press Enter" autocomplete="off" spellcheck="false" />
       <button id="btnAddUrl" class="btn-action primary" title="Add this link to the download queue">+ Add</button>
       <label class="opt">Max at once <input id="txtMaxConcurrent" type="number" min="1" max="16" value="3" /></label>
       <label class="opt">Speed limit (KB/s, 0 = off) <input id="txtSpeedLimit" type="number" min="0" step="64" value="0" /></label>
     </div>
 
-    <div id="list"></div>
+    <div id="list" role="list" aria-label="Downloads"></div>
 
     <div id="empty" class="empty">
       <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 20h16"/></svg>
@@ -541,7 +541,7 @@
 
   <!-- Delete Modal -->
   <div id="modalDelete" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Delete download">
       <div class="modal-header">
         <svg viewBox="0 0 24 24" stroke="var(--danger)" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Delete Download
@@ -562,7 +562,7 @@
 
   <!-- Refresh Link Modal (IDM Feature) -->
   <div id="modalRefresh" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Refresh download address">
       <div class="modal-header">
         <svg viewBox="0 0 24 24" stroke="var(--accent)" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         Refresh Download Address
@@ -582,7 +582,7 @@
 
   <!-- Clear Finished Modal -->
   <div id="modalClear" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Clear finished downloads">
       <div class="modal-header">Clear finished downloads</div>
       <div class="modal-desc">Remove completed and failed downloads from the list? The files stay on your disk.</div>
       <div class="modal-buttons">
@@ -592,7 +592,7 @@
     </div>
   </div>
 
-  <div id="toast" class="toast">Link copied to clipboard</div>
+  <div id="toast" class="toast" role="status" aria-live="polite">Link copied to clipboard</div>
 
   <script>
     (() => {
@@ -661,6 +661,20 @@
         return (i === 0 ? n + ' B' : v.toFixed(1) + ' ' + u[i]);
       };
 
+      // "42 sec left", "7 min left", "1 hr 5 min left" - same wording as the downloads dropdown in the browser window.
+      const fmtEta = (sec) => {
+        if (!sec || sec <= 0) return '';
+        if (sec < 5) return 'A few seconds left';
+        if (sec < 60) return Math.ceil(sec) + ' sec left';
+        if (sec < 3600) { const m = Math.ceil(sec / 60); return m >= 60 ? '1 hr left' : m + ' min left'; }
+        if (sec < 86400) {
+          let h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+          if (m === 60) { h++; m = 0; }
+          return m === 0 ? h + ' hr left' : h + ' hr ' + m + ' min left';
+        }
+        return 'More than a day left';
+      };
+
       const ago = (ms) => {
         const s = Math.max(0, (Date.now() - ms) / 1000);
         if (s < 60) return 'Just now';
@@ -725,6 +739,7 @@
       const actButton = (title, path, cls, onClick) => {
         const b = el('button', 'act-btn' + (cls ? ' ' + cls : ''));
         b.title = title;
+        b.setAttribute('aria-label', title); // icon-only: screen readers need the name
         b.appendChild(svgIcon(path));
         b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
         return b;
@@ -735,6 +750,7 @@
 
       const createCard = (d) => {
         const card = el('div', 'card');
+        card.setAttribute('role', 'listitem');
         card.dataset.id = d.id;
 
         const ico = el('div', 'ico');
@@ -753,6 +769,9 @@
         info.appendChild(statusLine);
 
         const bar = el('div', 'bar');
+        bar.setAttribute('role', 'progressbar');
+        bar.setAttribute('aria-valuemin', '0');
+        bar.setAttribute('aria-valuemax', '100');
         const barFill = document.createElement('i');
         bar.appendChild(barFill);
         info.appendChild(bar);
@@ -831,7 +850,7 @@
         if (downloading) {
           const part = d.totalBytes > 0 ? fmtBytes(d.receivedBytes) + ' of ' + fmtBytes(d.totalBytes) : fmtBytes(d.receivedBytes);
           const pct = d.totalBytes > 0 ? ' (' + Math.floor(d.progress) + '%)' : '';
-          statusStr = part + pct + (d.speed && d.speed !== '-' ? ' • ' + d.speed : '');
+          statusStr = part + pct + (d.speed && d.speed !== '-' ? ' • ' + d.speed : '') + (d.etaSeconds ? ' • ' + fmtEta(d.etaSeconds) : '');
         } else if (paused) {
           statusStr = 'Paused • ' + fmtBytes(d.receivedBytes) + (d.totalBytes > 0 ? ' of ' + fmtBytes(d.totalBytes) : '');
           statusCls = 'paused';
@@ -853,6 +872,8 @@
           cardObj.bar.style.display = 'block';
           cardObj.bar.className = 'bar' + (paused ? ' paused' : queued ? ' wait' : '');
           cardObj.barFill.style.width = Math.max(0, Math.min(100, d.progress || 0)) + '%';
+          cardObj.bar.setAttribute('aria-valuenow', String(Math.round(Math.max(0, Math.min(100, d.progress || 0)))));
+          cardObj.bar.setAttribute('aria-label', 'Download progress for ' + (d.fileName || 'file'));
         } else {
           cardObj.bar.style.display = 'none';
         }
@@ -1059,11 +1080,18 @@
         }
       });
 
-      // Navigation filter click
+      // Navigation filter click (the filters are list items: make them reachable and usable from the keyboard too)
       document.querySelectorAll('.nav-item').forEach(item => {
+        item.setAttribute('role', 'button');
+        item.tabIndex = 0;
+        item.setAttribute('aria-pressed', item.classList.contains('active') ? 'true' : 'false');
+        item.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); item.click(); }
+        });
         item.addEventListener('click', () => {
-          document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+          document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.setAttribute('aria-pressed', 'false'); });
           item.classList.add('active');
+          item.setAttribute('aria-pressed', 'true');
           currentFilter = item.getAttribute('data-filter');
           viewTitleEl.textContent = item.textContent.trim().split('\n')[0];
           render();
@@ -1159,5 +1187,7 @@
   </script>
 </body>
 </html>
+
+
 
 

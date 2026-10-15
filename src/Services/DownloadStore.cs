@@ -102,7 +102,7 @@ namespace CustomBrowser.Services
                 FileName = entry.FileName,
                 Url = entry.Url,
                 SavePath = entry.SavePath,
-                CookieHeader = entry.CookieHeader,
+                CookieHeader = SecretProtector.Unprotect(entry.CookieHeader), // stored protected; the item holds the plain header
                 Referer = entry.Referer,
                 UserAgent = entry.UserAgent,
                 StartedAt = entry.StartedAt,
@@ -254,4 +254,6 @@ namespace CustomBrowser.Services
         }
     }
 }
+
+
 

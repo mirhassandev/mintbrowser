@@ -161,7 +161,8 @@ namespace CustomBrowser.Services
                             item.Progress = Math.Min(99.9, Math.Max(0.0, p.Fraction * 100.0));
                             if (p.Phase == "Downloading")
                             {
-                                item.Speed = p.SpeedBytesPerSecond > 0 ? $"{p.SpeedBytesPerSecond / 1024.0 / 1024.0:F2} MB/s" : "-";
+                                item.SpeedBytesPerSecond = p.SpeedBytesPerSecond;
+                                item.Speed = DownloadItem.FormatSpeed(p.SpeedBytesPerSecond);
                             }
                             else
                             {
@@ -398,4 +399,6 @@ namespace CustomBrowser.Services
         }
     }
 }
+
+
 

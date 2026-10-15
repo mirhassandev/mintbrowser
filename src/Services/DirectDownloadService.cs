@@ -300,9 +300,10 @@ namespace CustomBrowser.Services
                 item.Progress = Math.Min(100.0, Math.Max(0.0, e.ProgressPercentage));
                 item.ReceivedBytes = e.ReceivedBytesSize;
                 item.TotalBytes = e.TotalBytesToReceive;
-                item.Speed = $"{e.AverageBytesPerSecondSpeed / 1024.0 / 1024.0:F2} MB/s";
-                item.DownloadedSize = $"{e.ReceivedBytesSize / 1024.0 / 1024.0:F2} MB";
-                item.TotalSize = $"{e.TotalBytesToReceive / 1024.0 / 1024.0:F2} MB";
+                item.SpeedBytesPerSecond = e.AverageBytesPerSecondSpeed; // before Speed: setting the text refreshes the status line
+                item.Speed = DownloadItem.FormatSpeed(e.AverageBytesPerSecondSpeed);
+                item.DownloadedSize = DownloadItem.FormatBytes(e.ReceivedBytesSize);
+                item.TotalSize = DownloadItem.FormatBytes(e.TotalBytesToReceive);
                 item.Status = CustomStatus.Downloading;
                 if (e.ReceivedBytesSize > 0) SignalStart(item.Id, 0); // the server accepted us: the browser's own copy can be dropped
 
@@ -762,4 +763,6 @@ namespace CustomBrowser.Services
         }
     }
 }
+
+
 

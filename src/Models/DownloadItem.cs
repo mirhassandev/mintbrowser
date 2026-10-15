@@ -49,6 +49,11 @@ namespace CustomBrowser.Models
         public long TotalBytes { get => _totalBytes; set => SetField(ref _totalBytes, value); }
         public DateTime StartedAt { get => _startedAt; set => SetField(ref _startedAt, value); }
         public DateTime? CompletedAt { get; set; }
+        /// <summary>
+        /// Current transfer speed in bytes per second, for the "time left" estimate. Not saved. Set it BEFORE <see cref="Speed"/>
+        /// (setting the text refreshes the status line). Reset to 0 whenever the download is not running.
+        /// </summary>
+        public double SpeedBytesPerSecond { get; set; }
         public DownloadType Type { get => _type; set => SetField(ref _type, value); }
 
         public string Category
@@ -80,6 +85,7 @@ namespace CustomBrowser.Models
             {
                 // Stamp the time BEFORE the change notification so the status text already shows it.
                 if (value == DownloadStatus.Completed && _status != DownloadStatus.Completed) CompletedAt = DateTime.Now;
+                if (value != DownloadStatus.Downloading) SpeedBytesPerSecond = 0; // a paused / finished download has no speed
                 SetField(ref _status, value);
             }
         }
@@ -140,9 +146,10 @@ namespace CustomBrowser.Models
                     case DownloadStatus.Downloading:
                     {
                         string done = SizeText(ReceivedBytes, DownloadedSize);
-                        string speed = string.IsNullOrWhiteSpace(Speed) ? string.Empty : $" - {Speed}";
+                        string speed = string.IsNullOrWhiteSpace(Speed) || Speed == "-" ? string.Empty : $" - {Speed}";
+                        string left = Eta is TimeSpan remaining ? $" - {FormatEta(remaining)}" : string.Empty;
                         return TotalBytes > 0
-                            ? $"{done} of {SizeText(TotalBytes, TotalSize)}{speed}"
+                            ? $"{done} of {SizeText(TotalBytes, TotalSize)}{speed}{left}"
                             : $"{done}{speed}";
                     }
                     case DownloadStatus.Paused:
@@ -178,6 +185,53 @@ namespace CustomBrowser.Models
         public void RefreshStatusText() => OnPropertyChanged(nameof(StatusText));
 
         private static string SizeText(long bytes, string fallback) => bytes > 0 ? FormatBytes(bytes) : fallback;
+
+        /// <summary>
+        /// How long the rest should take at the current speed. Null when it cannot be told (not running, size or speed unknown)
+        /// or the guess is useless (more than 30 days).
+        /// </summary>
+        public TimeSpan? Eta
+        {
+            get
+            {
+                if (Status != DownloadStatus.Downloading || SpeedBytesPerSecond < 1 || TotalBytes <= ReceivedBytes) return null;
+                double seconds = (TotalBytes - ReceivedBytes) / SpeedBytesPerSecond;
+                return seconds > 30 * 24 * 3600 ? null : TimeSpan.FromSeconds(seconds);
+            }
+        }
+
+        /// <summary>The estimate in whole seconds for the downloads page, or null when there is none.</summary>
+        public double? EtaSeconds => Eta?.TotalSeconds;
+
+        /// <summary>"850 KB/s", "12.4 MB/s": the unit follows the size, so a slow link never reads "0.01 MB/s". "-" when there is no speed.</summary>
+        public static string FormatSpeed(double bytesPerSecond)
+        {
+            if (bytesPerSecond <= 0 || double.IsNaN(bytesPerSecond) || double.IsInfinity(bytesPerSecond)) return "-";
+            if (bytesPerSecond < 1024) return $"{bytesPerSecond:0} B/s";
+            if (bytesPerSecond < 1024 * 1024) return $"{bytesPerSecond / 1024:0} KB/s";
+            if (bytesPerSecond < 1024.0 * 1024 * 1024) return $"{bytesPerSecond / (1024 * 1024):0.0} MB/s";
+            return $"{bytesPerSecond / (1024.0 * 1024 * 1024):0.00} GB/s";
+        }
+
+        /// <summary>"A few seconds left", "42 sec left", "7 min left", "1 hr 5 min left".</summary>
+        public static string FormatEta(TimeSpan left)
+        {
+            if (left.TotalSeconds < 5) return "A few seconds left";
+            if (left.TotalSeconds < 60) return $"{Math.Ceiling(left.TotalSeconds):0} sec left";
+            if (left.TotalMinutes < 60)
+            {
+                int minutes = (int)Math.Ceiling(left.TotalMinutes);
+                return minutes >= 60 ? "1 hr left" : $"{minutes} min left";
+            }
+            if (left.TotalHours < 24)
+            {
+                int hours = (int)left.TotalHours;
+                int minutes = (int)Math.Round(left.Minutes + left.Seconds / 60.0);
+                if (minutes == 60) { hours++; minutes = 0; }
+                return minutes == 0 ? $"{hours} hr left" : $"{hours} hr {minutes} min left";
+            }
+            return "More than a day left";
+        }
 
         public static string FormatBytes(long bytes)
         {
@@ -238,4 +292,6 @@ namespace CustomBrowser.Models
         }
     }
 }
+
+
 

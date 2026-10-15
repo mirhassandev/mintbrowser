@@ -27,6 +27,9 @@ namespace CustomBrowser
                 args.Handled = true;
             };
 
+            // Windows signing out / shutting down: windows must close without asking anything.
+            SessionEnding += (s, args) => CustomBrowser.MainWindow.SessionIsEnding = true;
+
             // Fire-and-forget tasks (_ = SomethingAsync()) that throw end up here instead of vanishing.
             TaskScheduler.UnobservedTaskException += (s, args) =>
             {
@@ -60,4 +63,6 @@ namespace CustomBrowser
         }
     }
 }
+
+
 

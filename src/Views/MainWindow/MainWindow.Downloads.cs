@@ -697,6 +697,7 @@ namespace CustomBrowser
                 status = d.Status.ToString().ToLowerInvariant(),
                 progress = d.Progress,
                 speed = d.Speed,
+                etaSeconds = d.EtaSeconds,
                 downloadedSize = d.DownloadedSize,
                 totalSize = d.TotalSize,
                 receivedBytes = d.ReceivedBytes,
@@ -786,4 +787,6 @@ namespace CustomBrowser
         }
     }
 }
+
+
 

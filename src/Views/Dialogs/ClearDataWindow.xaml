@@ -1,0 +1,84 @@
+<Window x:Class="CustomBrowser.Views.ClearDataWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Clear browsing data" Width="540" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/CustomBrowser;component/Themes/DialogTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- The 24px margin leaves room for the soft shadow around the card -->
+    <Border Margin="24" Background="{StaticResource MintSurfaceBrush}" BorderBrush="{StaticResource MintSeparatorBrush}" BorderThickness="1"
+            CornerRadius="{StaticResource MintRadiusL}" MouseLeftButtonDown="Card_MouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black"/>
+        </Border.Effect>
+        <StackPanel Margin="24,22,24,20">
+            <TextBlock Text="Clear browsing data" Foreground="{StaticResource MintTextBrush}" FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock Text="Choose what to remove from this browser." Foreground="{StaticResource MintTextMutedBrush}" FontSize="12" Margin="0,4,0,0"/>
+
+            <TextBlock Text="Time range" Style="{StaticResource FieldLabel}"/>
+            <ListBox x:Name="LstRange" Style="{StaticResource DarkListBox}" ItemContainerStyle="{StaticResource ChipItem}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <TextBlock Text="Data to clear" Style="{StaticResource FieldLabel}"/>
+
+            <CheckBox x:Name="ChkHistory" IsChecked="True" Style="{StaticResource DarkCheckBox}" Margin="0,0,0,12"
+                      Checked="Option_Changed" Unchecked="Option_Changed">
+                <StackPanel>
+                    <TextBlock Text="Browsing history" Foreground="{StaticResource MintTextBrush}" FontSize="13"/>
+                    <TextBlock Text="Visited pages, recent searches and recently closed tabs" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </CheckBox>
+
+            <CheckBox x:Name="ChkCookies" IsChecked="True" Style="{StaticResource DarkCheckBox}" Margin="0,0,0,12"
+                      Checked="Option_Changed" Unchecked="Option_Changed">
+                <StackPanel>
+                    <TextBlock Text="Cookies and other site data" Foreground="{StaticResource MintTextBrush}" FontSize="13"/>
+                    <TextBlock Text="Signs you out of most websites" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </CheckBox>
+
+            <CheckBox x:Name="ChkCache" IsChecked="True" Style="{StaticResource DarkCheckBox}" Margin="0,0,0,12"
+                      Checked="Option_Changed" Unchecked="Option_Changed">
+                <StackPanel>
+                    <TextBlock Text="Cached images and files" Foreground="{StaticResource MintTextBrush}" FontSize="13"/>
+                    <TextBlock Text="Frees disk space; some sites load more slowly the first time" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </CheckBox>
+
+            <CheckBox x:Name="ChkPasswords" Style="{StaticResource DarkCheckBox}" Margin="0,0,0,12"
+                      Checked="Option_Changed" Unchecked="Option_Changed">
+                <StackPanel>
+                    <TextBlock Text="Saved passwords" Foreground="{StaticResource MintTextBrush}" FontSize="13"/>
+                    <TextBlock Text="Logins this browser offered to save" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </CheckBox>
+
+            <CheckBox x:Name="ChkAutofill" Style="{StaticResource DarkCheckBox}"
+                      Checked="Option_Changed" Unchecked="Option_Changed">
+                <StackPanel>
+                    <TextBlock Text="Autofill form data" Foreground="{StaticResource MintTextBrush}" FontSize="13"/>
+                    <TextBlock Text="Saved names, addresses and similar form entries" Foreground="{StaticResource MintTextMutedBrush}" FontSize="11.5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </CheckBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+                <Button x:Name="BtnCancel" Content="Cancel" Style="{StaticResource MintButton}" IsCancel="True" Margin="0,0,8,0"/>
+                <Button x:Name="BtnClear" Content="Clear data" Style="{StaticResource MintPrimaryButton}" IsDefault="True" Click="BtnClear_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

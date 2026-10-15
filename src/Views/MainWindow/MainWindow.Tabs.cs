@@ -126,6 +126,7 @@ namespace CustomBrowser
                     // The built-in pages (new tab, downloads) are local files: showing a spinner / stop button / progress bar
                     // for them is what made a new tab look like it was "loading". Chrome and Firefox show nothing here either.
                     tab.IsLoading = !IsBuiltInPage(e.Uri);
+                    tab.ClearBlockedPopups(); // pop-ups blocked on the previous page are not this page's business
                     bool targetIsNewTab = e.Uri != null && e.Uri.StartsWith(NewTabUrl, StringComparison.OrdinalIgnoreCase);
                     webView.DefaultBackgroundColor = targetIsNewTab
                         ? System.Drawing.Color.Transparent
@@ -146,13 +147,19 @@ namespace CustomBrowser
                         {
                             tab.Favicon = GetFaviconSuggestionUrl(tab.Url);
                         }
-                        try
+                        // A new document is recorded in NavigationCompleted, and only when it loaded: a mistyped address or an
+                        // error page must not end up in history. A same-document change (single-page-app route, pushState) has
+                        // no load of its own, so it is recorded here.
+                        if (!e.IsNewDocument)
                         {
-                            _dbService.AddHistory(core.DocumentTitle, tab.Url, tab.Favicon ?? "");
-                        }
-                        catch (Exception ex)
-                        {
-                            AppLog.Warn("Failed to record history on SourceChanged", ex);
+                            try
+                            {
+                                _dbService.AddHistory(core.DocumentTitle, tab.Url, tab.Favicon ?? "");
+                            }
+                            catch (Exception ex)
+                            {
+                                AppLog.Warn("Failed to record history on SourceChanged", ex);
+                            }
                         }
                     }
                     MainWindow owner = GetTabOwner(tab) ?? this;
@@ -197,6 +204,10 @@ namespace CustomBrowser
                 core.NavigationCompleted += (s, e) =>
                 {
                     tab.IsLoading = false;
+                    if (!e.IsSuccess)
+                    {
+                        _ = ShowFriendlyErrorPageAsync(tab, core, e.WebErrorStatus); // network failures get the browser's own page
+                    }
                     if (tab.Url != NewTabUrl && (string.IsNullOrEmpty(tab.Favicon) || tab.Favicon == GetLocalFaviconFileUri()))
                     {
                         tab.Favicon = GetFaviconSuggestionUrl(tab.Url);
@@ -248,6 +259,16 @@ namespace CustomBrowser
                     if (!e.IsUserInitiated)
                     {
                         AppLog.Debug($"Blocked a popup that was not user-initiated: {e.Uri}");
+                        if (Uri.TryCreate(e.Uri, UriKind.Absolute, out Uri? blockedUri) &&
+                            (blockedUri.Scheme == Uri.UriSchemeHttp || blockedUri.Scheme == Uri.UriSchemeHttps) &&
+                            tab.AddBlockedPopup(blockedUri.AbsoluteUri))
+                        {
+                            MainWindow blockedOwner = GetTabOwner(tab) ?? this;
+                            blockedOwner.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                if (ReferenceEquals(blockedOwner.SelectedTab, tab)) blockedOwner.UpdatePopupBlockedIndicator();
+                            }));
+                        }
                         return;
                     }
                     string popupUrl = string.IsNullOrWhiteSpace(e.Uri) ? string.Empty : e.Uri;
@@ -745,5 +766,9 @@ namespace CustomBrowser
         }
     }
 }
+
+
+
+
 
 
